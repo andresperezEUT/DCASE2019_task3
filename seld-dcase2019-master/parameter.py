@@ -11,10 +11,10 @@ def get_params(argv):
         quick_test=True,     # To do quick test. Trains/test on small subset of dataset, and # of epochs
 
         # INPUT PATH
-        dataset_dir='/proj/asignal/DCASE2019/dataset/',  # Base folder containing the foa/mic and metadata folders
+        dataset_dir='/Volumes/Dinge/DCASE2019_subset/',  # Base folder containing the foa/mic and metadata folders
 
         # OUTPUT PATH
-        feat_label_dir='/proj/asignal/DCASE2019/dataset/feat_label/',  # Directory to dump extracted features and labels
+        feat_label_dir='/Volumes/Dinge/DCASE2019_subset/feat_label/',  # Directory to dump extracted features and labels
         model_dir='models/',   # Dumps the trained models and training curves in this folder
         dcase_output=True,     # If true, dumps the results recording-wise in 'dcase_dir' path.
                                # Set this true after you have finalized your model, save the output, and submit

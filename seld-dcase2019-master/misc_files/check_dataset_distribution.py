@@ -6,11 +6,11 @@ import sys
 sys.path.append(os.path.join(sys.path[0], '..'))
 import cls_feature_class
 import matplotlib.pyplot as plot
-plot.switch_backend('Qt4Agg')
+# plot.switch_backend('Qt4Agg')
 # plot.switch_backend('TkAgg')
 from IPython import embed
 # Path to the metadata folder
-dev_dataset = '/home/adavanne/taitoSharedData/DCASE2019/dataset/metadata_dev'
+dev_dataset = '/Volumes/Dinge/DCASE2019_subset//metadata_dev'
 
 feat_cls = cls_feature_class.FeatureClass()
 hop_len_s = feat_cls.get_hop_len_sec()

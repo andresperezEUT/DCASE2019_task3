@@ -11,7 +11,7 @@ from metrics import evaluation_metrics
 import cls_feature_class
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plot
-plot.switch_backend('Qt4Agg')
+# plot.switch_backend('Qt4Agg')
 # plot.switch_backend('TkAgg')
 
 
@@ -53,8 +53,8 @@ pred = '/home/adavanne/taitoWorkDir/SELD_DCASE2019/results/999_foa_dev/split0_ir
 # path of reference audio directory for visualizing the spectrogram and description directory for
 # visualizing the reference
 # Note: The code finds out the audio filename from the predicted filename automatically
-ref_dir = '/home/adavanne/taitoSharedData/DCASE2019/dataset/metadata_dev/'
-aud_dir = '/home/adavanne/taitoSharedData/DCASE2019/dataset/foa_dev/'
+ref_dir = '/Volumes/Dinge/DCASE2019_subset/foa_dev/metadata_dev/'
+aud_dir = '/Volumes/Dinge/DCASE2019_subset/foa_dev/foa_dev/'
 
 # load the predicted output format
 pred_dict = evaluation_metrics.load_output_format_file(pred)

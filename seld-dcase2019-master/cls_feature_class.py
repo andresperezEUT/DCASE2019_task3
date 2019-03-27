@@ -232,9 +232,10 @@ class FeatureClass:
             self._aud_dir, self._desc_dir, self._feat_dir))
 
         for file_cnt, file_name in enumerate(os.listdir(self._aud_dir)):
-            print('{}: {}'.format(file_cnt, file_name))
-            wav_filename = '{}.wav'.format(file_name.split('.')[0])
-            self._extract_spectrogram_for_file(wav_filename)
+            if file_name != '.DS_Store':
+                print('{}: {}'.format(file_cnt, file_name))
+                wav_filename = '{}.wav'.format(file_name.split('.')[0])
+                self._extract_spectrogram_for_file(wav_filename)
 
     def preprocess_features(self):
         # Setting up folders and filenames

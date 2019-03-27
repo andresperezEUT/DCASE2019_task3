@@ -17,7 +17,7 @@ plt.style.use('default')
 # FOLDERS
 
 # Development data path
-parent_folder_path = '/Volumes/Dinge/DCASE2019'
+parent_folder_path = '/Volumes/Dinge/DCASE2019_subset'
 data_folder_path = os.path.join(parent_folder_path, 'foa_dev')
 metadata_folder_path = os.path.join(parent_folder_path, 'metadata_dev')
 
