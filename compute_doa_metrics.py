@@ -1,6 +1,6 @@
 import os
-from metrics import evaluation_metrics
-import cls_feature_class
+import seld_dcase2019_master.metrics.evaluation_metrics as evaluation_metrics
+import seld_dcase2019_master.cls_feature_class as cls_feature_class
 import numpy as np
 
 
@@ -26,8 +26,8 @@ def get_nb_files(_pred_file_list, _group='split'):
 # Metric evaluation at a fixed hop length of 20 ms (=0.02 seconds) and 3000 frames for a 60s audio
 
 # INPUT DIRECTORY
-ref_desc_files = '/home/adavanne/taitoSharedData/DCASE2019/dataset/metadata_dev' # reference description directory location
-pred_output_format_files = '/home/adavanne/taitoWorkDir/SELD_DCASE2019/results/2_mic_dev' # predicted output format directory location
+ref_desc_files = '/Volumes/Dinge/DCASE2019_subset/metadata_dev' # reference description directory location
+pred_output_format_files = '/Users/andres.perez/source/DCASE2019/results/subset' # predicted output format directory location
 
 # Load feature class
 feat_cls = cls_feature_class.FeatureClass()
@@ -44,9 +44,9 @@ nb_ref_files = len(ref_files)
 pred_files = os.listdir(pred_output_format_files)
 nb_pred_files = len(pred_files)
 
-if nb_ref_files != nb_pred_files:
-    print('ERROR: Mismatch. Reference has {} and prediction has {} files'.format(nb_ref_files, nb_pred_files))
-    exit()
+# if nb_ref_files != nb_pred_files:
+#     print('ERROR: Mismatch. Reference has {} and prediction has {} files'.format(nb_ref_files, nb_pred_files))
+#     raise IOError
 
 # Load evaluation metric class
 eval = evaluation_metrics.SELDMetrics(nb_frames_1s=feat_cls.nb_frames_1s(), data_gen=feat_cls)
@@ -71,15 +71,19 @@ for score_type in score_type_list:
             pred_dict = evaluation_metrics.load_output_format_file(os.path.join(pred_output_format_files, pred_file))
 
             # Load reference description file
-            gt_desc_file_dict = feat_cls.read_desc_file(os.path.join(ref_desc_files, pred_file.replace('.npy', '.csv')))
+            gt_dest_file_path = os.path.join(ref_desc_files, pred_file.replace('.npy', '.csv'))
+            if not os.path.exists(gt_dest_file_path):
+                print('Metadata file not found: ' + gt_dest_file_path)
+            else:
+                gt_desc_file_dict = feat_cls.read_desc_file(gt_dest_file_path)
 
-            # Generate classification labels for SELD
-            gt_labels = feat_cls.get_clas_labels_for_file(gt_desc_file_dict)
-            pred_labels = evaluation_metrics.output_format_dict_to_classification_labels(pred_dict, feat_cls)
+                # Generate classification labels for SELD
+                gt_labels = feat_cls.get_clas_labels_for_file(gt_desc_file_dict)
+                pred_labels = evaluation_metrics.output_format_dict_to_classification_labels(pred_dict, feat_cls)
 
-            # Calculated SED and DOA scores
-            eval.update_sed_scores(pred_labels.max(2), gt_labels.max(2))
-            eval.update_doa_scores(pred_labels, gt_labels)
+                # Calculated SED and DOA scores
+                eval.update_sed_scores(pred_labels.max(2), gt_labels.max(2))
+                eval.update_doa_scores(pred_labels, gt_labels)
 
         # Overall SED and DOA scores
         er, f = eval.compute_sed_scores()

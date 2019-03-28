@@ -14,7 +14,7 @@ from keras.models import load_model
 import parameter
 import time
 
-plot.switch_backend('agg')
+# plot.switch_backend('agg')
 
 
 def collect_test_labels(_data_gen_test, _data_out, quick_test):

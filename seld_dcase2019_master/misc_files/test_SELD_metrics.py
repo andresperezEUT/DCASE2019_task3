@@ -74,16 +74,16 @@ ov = 1  # max overlap 1 or 2
 if ov == 1:
     # When there is maximum one sound event at a given time, both regression and classification approach of DOA gives
     # identical DOA results.
-    gt_desc_file = 'test_files/split1_ir0_ov1_1.csv'
-    pred_desc_file = 'test_files/split1_ir1_ov1_21.csv'
+    gt_desc_file = '../test_files/split1_ir0_ov1_1.csv'
+    pred_desc_file = '../test_files/split1_ir1_ov1_21.csv'
 else:
     # The regression and classification approach for DOA estimation gives different DOA results in sound scenes with
     # ov > 1. This is because in regression format of DOA estimation, a sound scene where a single class overlaps by
     # itself is not supported. Hence, in order to have similar results with regression and classification approach,
     # we use the DCASE 2019 output format.
 
-    gt_desc_file = 'test_files/split1_ir0_ov2_11.csv'
-    pred_desc_file = 'test_files/split1_ir1_ov2_31.csv'
+    gt_desc_file = '../test_files/split1_ir0_ov2_11.csv'
+    pred_desc_file = '../test_files/split1_ir1_ov2_31.csv'
 
 
 # Load feature class. Also works with preloaded data_generator class. Like used in the seld.py code to compute metrics

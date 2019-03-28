@@ -10,7 +10,7 @@ from sklearn.externals import joblib
 from IPython import embed
 import matplotlib.pyplot as plot
 import librosa
-plot.switch_backend('agg')
+# plot.switch_backend('agg')
 
 
 class FeatureClass:

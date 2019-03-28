@@ -19,10 +19,13 @@ plt.style.use('default')
 # Development data path
 parent_folder_path = '/Volumes/Dinge/DCASE2019_subset'
 data_folder_path = os.path.join(parent_folder_path, 'foa_dev')
-metadata_folder_path = os.path.join(parent_folder_path, 'metadata_dev')
+# metadata_folder_path = os.path.join(parent_folder_path, 'metadata_dev')
+result_folder_path = '/Users/andres.perez/source/DCASE2019/results/subset'
+result_file_extension = '.csv'
 
-data_files = os.listdir(data_folder_path)
-metadata_files = os.listdir(metadata_folder_path)
+
+
+# metadata_files = os.listdir(metadata_folder_path)
 metadata_extension = '.csv'
 
 
@@ -97,7 +100,7 @@ def process(data, sr):
 
     start_frame = 0
     # end_frame = num_frames
-    end_frame = int(sr * 15)
+    end_frame = np.shape(data)[0]
 
     x = psa.Signal(data[start_frame:end_frame].T, sr, 'acn', 'n3d')
     X = psa.Stft.fromSignal(x,
@@ -254,6 +257,67 @@ def process(data, sr):
         plt.vlines(postprocessed_offsets, ymin_azi, ymax_azi, linestyles='dashed', colors='b')
         plt.show()
 
+
+
+    ## Bounce data to output format [frame_id, class_id, azimuth, elevation]
+    #   For the moment, let's stick with the window size of the analysis,
+    #   and we will perform the conversion to the required hopsize later
+
+    # result = [bin, class_id, azi, ele] with likely repeated bin instances
+    result = []
+    class_id = 0 #whatever for the moment
+    for bin_idx, bin in enumerate(activity_bins):
+        azi = position_mean[bin_idx][0]
+        ele = position_mean[bin_idx][1]
+        result.append( [bin, class_id, azi, ele] )
+
+    ## Perform the window transformation by averaging within new bin
+    ## TODO: assert our bins are smaller than required ones
+
+    current_window_hop = (window_size-window_overlap) / float(sr)
+    required_window_hop = 0.02
+    window_factor = required_window_hop/current_window_hop
+
+    # Since bins are ordered (at least they should), we can optimise that a little bit
+    last_bin = -1
+    # result_quantized = [bin, [class_id, azi, ele],[class_id, azi, ele]... ] without repeated bin instances
+    result_quantized = []
+    for row in result:
+        bin = row[0]
+        new_bin = int(np.floor(bin/window_factor))
+        if new_bin == last_bin:
+            result_quantized[-1].append( [ row[1], row[2], row[3] ] )
+        else:
+            result_quantized.append([new_bin, [row[1], row[2], row[3]]])
+        last_bin = new_bin
+
+    # Let's average them within the quantized_bin
+    # TODO: in the future, probably discriminate here between multiple sources based on std or something...
+
+    result_averaged_dict = {}
+    for row in result_quantized:
+        bin = row[0]
+        label = 0 #TODO
+
+        azis = np.asarray(row[1:])[:,1]
+        azi = scipy.stats.circmean(azis, high=180, low=-180)
+        eles = np.asarray(row[1:])[:,2]
+        ele = np.mean(eles)
+
+        result_averaged_dict[bin] = [label, azi, ele]
+
+    return result_averaged_dict
+
+
+
+
+
+
+
+
+
+
+
     # ## Plot histograms
     #
     # inertia_ratio_th = 2.
@@ -292,70 +356,94 @@ def process(data, sr):
     #     # plt.show()
 
 
-    # Doa Variance
-
-    vicinity_radius = 1
-    std = np.zeros((2, K, N))
-
-    for k in range(vicinity_radius, K-vicinity_radius):
-        for n in range(vicinity_radius, N-vicinity_radius):
-
-            range_k = range(k-vicinity_radius, k+vicinity_radius+1)
-            range_n = range(n-vicinity_radius, n+vicinity_radius+1)
-
-            std[0, k, n] = scipy.stats.circstd(doa.data[0, range_k, range_n], high=np.pi, low=-np.pi)
-            std[1, k, n] = np.std(doa.data[1, range_k, range_n])
-
-    # Edges: copy values
-    for m in range(2):
-        for k in range(0, vicinity_radius):
-            std[m, k, :] = std[m, k+vicinity_radius, :]
-        for k in range(K-vicinity_radius, K):
-            std[m, k, :] = std[m, K-vicinity_radius-1, :]
-        for n in range(0, vicinity_radius):
-            std[m, :, n] = std[m, :, n + vicinity_radius]
-        for n in range(N - vicinity_radius, N):
-            std[m, :, n] = std[m, :, N - vicinity_radius - 1,]
-
-    plt.figure(figsize=plt.figaspect(1 / 2.))
-    plt.subplot(211)
-    plt.pcolormesh(std[0])
-    plt.colorbar()
-    plt.subplot(212)
-    plt.pcolormesh(std[1])
-    plt.colorbar()
-    plt.show()
-
-    doa_std = psa.Stft(doa.t, doa.f, std, doa.sample_rate)
-
-    th_local = doa_std.compute_threshold_local(block_size=51, method='mean')
+    # # Doa Variance
+    #
+    # vicinity_radius = 1
+    # std = np.zeros((2, K, N))
+    #
+    # for k in range(vicinity_radius, K-vicinity_radius):
+    #     for n in range(vicinity_radius, N-vicinity_radius):
+    #
+    #         range_k = range(k-vicinity_radius, k+vicinity_radius+1)
+    #         range_n = range(n-vicinity_radius, n+vicinity_radius+1)
+    #
+    #         std[0, k, n] = scipy.stats.circstd(doa.data[0, range_k, range_n], high=np.pi, low=-np.pi)
+    #         std[1, k, n] = np.std(doa.data[1, range_k, range_n])
+    #
+    # # Edges: copy values
+    # for m in range(2):
+    #     for k in range(0, vicinity_radius):
+    #         std[m, k, :] = std[m, k+vicinity_radius, :]
+    #     for k in range(K-vicinity_radius, K):
+    #         std[m, k, :] = std[m, K-vicinity_radius-1, :]
+    #     for n in range(0, vicinity_radius):
+    #         std[m, :, n] = std[m, :, n + vicinity_radius]
+    #     for n in range(N - vicinity_radius, N):
+    #         std[m, :, n] = std[m, :, N - vicinity_radius - 1,]
+    #
+    # plt.figure(figsize=plt.figaspect(1 / 2.))
+    # plt.subplot(211)
+    # plt.pcolormesh(std[0])
+    # plt.colorbar()
+    # plt.subplot(212)
+    # plt.pcolormesh(std[1])
+    # plt.colorbar()
+    # plt.show()
+    #
+    # doa_std = psa.Stft(doa.t, doa.f, std, doa.sample_rate)
+    #
+    # th_local = doa_std.compute_threshold_local(block_size=51, method='mean')
 
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # MAIN
 
+print('-------------- PROCESSING FILES --------------')
+print('                                              ')
+print('Folder path: ' + data_folder_path              )
+print('                                              ')
+
+# Check if results destination folder exists, and create it in turn
+if not os.path.exists(result_folder_path):
+    os.mkdir(result_folder_path)
+
 # Iterate over all audio files
-# for audio_file in data_files:
+for audio_file in os.listdir(data_folder_path):
 # for audio_file in ['split1_ir0_ov1_1.wav']:
-for audio_file in ['split2_ir1_ov2_35.wav']:
-    print(audio_file)
+# for audio_file in ['split2_ir1_ov2_35.wav']:
+    if audio_file != '.DS_Store': # Fucking OSX
+        print(audio_file)
 
-    # Open audio file
-    data, sr = sf.read(os.path.join(data_folder_path,audio_file))
+        # Open audio file
+        data, sr = sf.read(os.path.join(data_folder_path,audio_file))
 
-    # Perform data analysis
-    process(data, sr)
+        # Perform data analysis
+        result = process(data, sr)
 
-    # Find associated metadata file
-    file_name = os.path.splitext(audio_file)[0]
-    metadata_file = os.path.join(metadata_folder_path,file_name+metadata_extension)
-    assert os.path.isfile(metadata_file)
+        # Write results to file
+        result_file_name = os.path.splitext(audio_file)[0] + result_file_extension
+        result_file_path = os.path.join(result_folder_path, result_file_name)
 
-    # Parse metadata file
-    groundtruth = Groundtruth()
-    with open(metadata_file, 'rb') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            groundtruth.add(row)
+        # Adapted from metrics.evaluation_metrics.write_output_format_file
+        _fid = open(result_file_path, 'w')
+        for _frame_ind in result.keys():
+            _value = result[_frame_ind]
+        # _ _fid.write('{},{},{},{}\n'.format('frame number with 20ms hop (int)', 'class index (int)', 'azimuth angle (int)', 'elevation angle (int)'))
+            _fid.write('{},{},{},{}\n'.format(int(_frame_ind), int(_value[0]), int(_value[1]), int(_value[2])))
+        _fid.close()
+
+print('-------------- PROCESSING FINISHED --------------')
+
+    # # Find associated metadata file
+    # file_name = os.path.splitext(audio_file)[0]
+    # metadata_file = os.path.join(metadata_folder_path,file_name+metadata_extension)
+    # assert os.path.isfile(metadata_file)
+    #
+    # # Parse metadata file
+    # groundtruth = Groundtruth()
+    # with open(metadata_file, 'rb') as csvfile:
+    #     reader = csv.reader(csvfile, delimiter=',')
+    #     for row in reader:
+    #         groundtruth.add(row)
 

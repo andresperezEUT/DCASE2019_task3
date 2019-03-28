@@ -14,7 +14,7 @@ def get_params(argv):
         dataset_dir='/Volumes/Dinge/DCASE2019_subset/',  # Base folder containing the foa/mic and metadata folders
 
         # OUTPUT PATH
-        feat_label_dir='/Volumes/Dinge/DCASE2019_subset/feat_label/',  # Directory to dump extracted features and labels
+        feat_label_dir='/Volumes/Dinge/DCASE2019_subset/feat_label_tmp/',  # Directory to dump extracted features and labels
         model_dir='models/',   # Dumps the trained models and training curves in this folder
         dcase_output=True,     # If true, dumps the results recording-wise in 'dcase_dir' path.
                                # Set this true after you have finalized your model, save the output, and submit
