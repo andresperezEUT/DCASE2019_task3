@@ -50,14 +50,14 @@ print('\n\n')
 
 # # ----------- TEST SED, DOA and SELD METRICS ---------------
 # In this section we read two random description files, and compute the metrics for two cases.
-# Case 1 when the description files are identical which correlates to perfect results from an ideal SELD method.
+# Case 1 when the description files are identical which correlates to perfect results from an ideal SELD doa_method.
 # Case 2 when the description files are different, this correlates to a classifier with imperfections.
 #
 # The ideal way of calculating the SELD metrics is using the output format as seen in
 # compute_seld_metrics_from_output_format_dict() of evaluation_metrics.py
 # This is because when approaching DOA estimation as regression task similar to baseline, we estimate only one DOA for a
 # given sound class. This is not ideal, because in the dataset, a particular sound class, can occur more than once at
-# the same time in different spatial locations. But since the baseline method doesnt support it, the training and
+# the same time in different spatial locations. But since the baseline doa_method doesnt support it, the training and
 # testing labels contain only one instance of these overlapping same class sound events. Thus the actual DOA score
 # calculated using compute_doa_scores_regr() while training the baseline are sub-optimal. Hence we calculate the
 # actual SELD metrics after the training is completed.

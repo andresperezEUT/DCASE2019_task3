@@ -14,7 +14,7 @@ eps = np.finfo(np.float).eps
 ##########################################################################################
 # SELD scoring functions - class implementation
 #
-# NOTE: Supports only one-hot labels for both SED and DOA. Doesnt work for baseline method
+# NOTE: Supports only one-hot labels for both SED and DOA. Doesnt work for baseline doa_method
 # directly, since it estimated DOA in regression approach. Check below the class for
 # one shot (function) implementations of all metrics. The function implementation has
 # support for both one-hot labels and regression values of DOA estimation.

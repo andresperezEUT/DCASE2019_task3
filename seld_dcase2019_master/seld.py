@@ -99,8 +99,8 @@ def main(argv):
         val_splits = [2, 3, 4, 1]
         train_splits = [[3, 4], [4, 1], [1, 2], [2, 3]]
 
-        # SUGGESTION: Considering the long training time, major tuning of the method can be done on the first split.
-        # Once you finlaize the method you can evaluate its performance on the complete cross-validation splits
+        # SUGGESTION: Considering the long training time, major tuning of the doa_method can be done on the first split.
+        # Once you finlaize the doa_method you can evaluate its performance on the complete cross-validation splits
         # test_splits = [1]
         # val_splits = [2]
         # train_splits = [[3, 4]]
