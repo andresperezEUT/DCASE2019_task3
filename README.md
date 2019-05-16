@@ -11,9 +11,13 @@ Project Structure
 #### /root
 
 ##### compute_doa_metrics.py
+TODO
 
-##### methods.py
-This file contains the audio processing functions, along with some utilities.
+##### doa_methods.py
+This file contains the source localization functions.
+
+##### file_utils.py
+Some handy functions to read/write files in the required format.
 
 ##### parameters.py
 The different run configurations are described here as a dictionary.
@@ -23,15 +27,25 @@ algorithm.
 Different configuration presets can be identified by the `preset_string`,
 incuding a default configuration.
 
+##### Preprocess_metadata_files.py
+This file contains the code to extract monophonic estimates of the sources
+given the groundtruth.
+
 ##### process.py
+Main process.
+TODO
 
 ##### README.md
 This file.
 
 ##### requirements.txt
+TODO
+
+##### utils.txt
+Some convenience functions and classes.
 
 ##### visualize_output.py
-
+TODO
 
 #### /data
 Folder where the development data is located. 
