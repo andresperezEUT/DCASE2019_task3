@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import sklearn
 from sklearn.cluster import KMeans
 import scipy.stats
-
+from utils import *
 
 
 
