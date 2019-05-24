@@ -60,6 +60,12 @@ for audio_file_name in os.listdir(data_folder_path):
                     plt.suptitle(sound_class_string)
                     plt.plot(sound_event_mono)
                     plt.grid()
+
+                    sf.write('/Users/andres.perez/Desktop/sources/'+sound_class_string+str(start_frame)+'.wav',sound_event_mono,sr)
+
+
+
+
 plt.show()
 
 

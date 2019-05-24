@@ -24,20 +24,23 @@ def get_params(preset_string=None):
 
         # MODEL PARAMETERS
         doa_method ='doa_method_mean',
+        file_duration = 60, # in seconds
         window_size = 256,
         fmin = 125,
         fmax = 8000,
         r = 4,
-        directivity_th = 0.5,
+        directivity_th = 0.75,
+        doa_std_vicinity_radius = 3,
+        doa_std_th = 0.75,
         num_min_valid_bins = 10,
         required_window_hop = 0.02,
-        rate_th = 20,
+        kmeans_rate_th = 20,
         # PLOT
         plot = False,
 
         # TEST
         quick_test = False,
-        quick_test_file_duration = 5, # in seconds
+        quick_test_file_duration = 0.75, # in seconds
     )
     params['window_overlap'] = params['window_size'] / 2
     params['nfft'] = params['window_size']
@@ -70,21 +73,35 @@ def get_params(preset_string=None):
         params['doa_method'] = 'doa_method_variance'
         params['directivity_th'] = 0.75
         params['num_min_valid_bins'] = 5
-        params['vicinity_radius'] = 2
+        params['doa_std_vicinity_radius'] = [5,2]
         params['doa_std_th'] = 0.75
         params['plot'] = False
         params['quick_test'] = False
 
     elif preset_string == '5':
         params['preset_string'] = preset_string
-        params['doa_method'] = 'doa_method_variance2'
-        params['directivity_th'] = 0.95
+        params['doa_method'] = 'doa_method_variance'
+        params['directivity_th'] = 0.75
         params['num_min_valid_bins'] = 5
-        params['vicinity_radius'] = 2
+        params['doa_std_vicinity_radius'] = 2
         params['doa_std_th'] = 0.75
         params['plot'] = True
         params['quick_test'] = True
 
+    elif preset_string == '6':
+        params['preset_string'] = preset_string
+        params['doa_method'] = 'doa_method_variance'
+        params['directivity_th'] = 0.95
+        params['r'] = 0
+        params['num_min_valid_bins'] = 10
+        params['doa_std_vicinity_radius'] = 10
+        params['doa_std_th'] = 0.5
+        params['kmeans_rate_th'] = 1
+        params['plot'] = True
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 2 # in seconds'
 
 
     # elif argv == '3':

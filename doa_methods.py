@@ -8,7 +8,6 @@ sys.path.append(pp)
 import parametric_spatial_audio_processing as psa
 import matplotlib.pyplot as plt
 import sklearn
-from sklearn.cluster import KMeans
 import scipy.stats
 from utils import *
 
@@ -22,7 +21,7 @@ def preprocess(data, sr, params):
 
     start_frame = 0
     if params['quick_test']:
-        end_frame = sr * params['quick_test_file_duration']
+        end_frame = int(np.ceil(sr * params['quick_test_file_duration']))
     else:
         end_frame = num_frames
 
@@ -41,7 +40,7 @@ def preprocess(data, sr, params):
 
     return X
 
-def compute_statistics(doa_th, sr, params, method='mean'):
+def fold_doa_into_results_vector(doa_th, sr, params, method='mean'):
     """
 
     :param doa_th:
@@ -53,8 +52,8 @@ def compute_statistics(doa_th, sr, params, method='mean'):
         possibly with repeated frame_idx values
         result_quantized: an array of type [frame_idx, [[class_id, azimuth, elevation]] in the target window hop time,
         with a row for each different frame_idx, time-quantizing all values given in result
-        result_averaged_dict: a dictionary of the form {frame_idx: [[class_id, azimuth elevation]]}  in the target window hop time,
-        with a key for each different frame_idx. It averages the content of result_quantized for one or two dict values per key.
+        # result_averaged_dict: a dictionary of the form {frame_idx: [[class_id, azimuth elevation]]}  in the target window hop time,
+        # with a key for each different frame_idx. It averages the content of result_quantized for one or two dict values per key.
     """
 
     N = doa_th.get_num_time_bins()
@@ -76,38 +75,6 @@ def compute_statistics(doa_th, sr, params, method='mean'):
         else:
             active_windows.append(n)
             position.append([rad2deg(azi), rad2deg(ele)])
-        #     if doa_method == 'mean':
-        #         mean_azi = rad2deg(scipy.stats.circmean(azi, high=np.pi, low=-np.pi))
-        #         mean_ele = rad2deg(np.mean(ele))
-        #         position_processed.append([mean_azi, mean_ele])
-        #     elif doa_method == 'median':
-        #         median_azi = rad2deg(circmedian(azi)[0])
-        #         median_ele = rad2deg(np.median(ele))
-        #         position_processed.append([median_azi, median_ele])
-
-
-    # if params['plot']:
-    #     ## Plot the nice graphs over time
-    #     ymin_azi = -200
-    #     ymax_azi = 200
-    #     ymin_ele = -100
-    #     ymax_ele = 100
-    #     with plt.style.context(('seaborn-whitegrid')):
-    #         plt.figure(figsize=plt.figaspect(1 / 2.))
-    #         plt.suptitle('azimuth')
-    #         plt.ylim(ymin_azi, ymax_azi)
-    #         plt.errorbar(active_windows, np.asarray(position)[:, 0], fmt='o', color='red', markersize=1)
-    #         # plt.vlines(postprocessed_onsets, ymin_azi, ymax_azi, linestyles='dashed', colors='k')
-    #         # plt.vlines(postprocessed_offsets, ymin_azi, ymax_azi, linestyles='dashed', colors='b')
-    #         plt.show()
-    #
-    #         plt.figure(figsize=plt.figaspect(1 / 2.))
-    #         plt.suptitle('elevation')
-    #         plt.ylim(ymin_ele, ymax_ele)
-    #         plt.errorbar(active_windows, np.asarray(position)[:, 1], fmt='o', color='red', markersize=1)
-    #         # plt.vlines(postprocessed_onsets, ymin_azi, ymax_azi, linestyles='dashed', colors='k')
-    #         # plt.vlines(postprocessed_offsets, ymin_azi, ymax_azi, linestyles='dashed', colors='b')
-    #         plt.show()
 
     # result = [bin, class_id, azi, ele] with likely repeated bin instances
     result = []
@@ -140,98 +107,51 @@ def compute_statistics(doa_th, sr, params, method='mean'):
             result_quantized.append([new_bin, [row[1], row[2], row[3]]])
         last_bin = new_bin
 
-    # result_indices = []
-    # result_azis = []
-    # for row in result:
-    #     result_indices.append(row[0])
-    #     result_azis.append(scipy.stats.circmean(row[2], high=180, low=-180))
 
 
-    # plt.figure()
-    # for p_index, p in enumerate(result):
-    #     plt.scatter(p[0], p[2])
-    # plt.show()
-
-    result_averaged_dict = {}
-
-    for row in result_quantized:
-        bin = row[0]
-        label = 0  # TODO
-
-        azis = np.asarray(row[1:])[:, 1]
-        eles = np.asarray(row[1:])[:, 2]
-
-        if method == 'kmeans':
-            x = np.asarray([azis, eles]).T
-            # print (bin)
-            kmeans1 = KMeans(n_clusters=1, random_state=0).fit(x)
-            kmeans2 = KMeans(n_clusters=2, random_state=0).fit(x)
-            rate = kmeans1.inertia_ / kmeans2.inertia_
-
-            if rate > params['rate_th']:
-                # 2 clusters:
-                result_averaged_dict[bin] = []
-                for c in kmeans2.cluster_centers_:
-                    print(bin, azi, ele)
-                    azi = c[0]
-                    ele = c[1]
-                    result_averaged_dict[bin].append([label, azi, ele])
-                    print result_averaged_dict[bin]
-            else:
-                # 1 cluster: median
-                azi = circmedian(azis, unit='deg')
-                ele = np.median(eles)
-                result_averaged_dict[bin] = [label, azi, ele]
-
-        ## Single source approach
-        elif method == 'median':
-            azi = circmedian(azis, unit='deg')
-            ele = np.median(eles)
-            result_averaged_dict[bin] = [label, azi, ele]
-
-        elif method == 'mean':
-            azi = scipy.stats.circmean(azis, high=180, low=-180)
-            ele = np.mean(eles)
-            result_averaged_dict[bin] = [label, azi, ele]
-
-
-    ## TODO!!!!
-    # clustering = DBSCAN(eps=1, min_samples=2, metric='haversine').fit(x); clustering.labels_
-
-    # ## Plot
-    # if params['plot']:
-    #     plt.figure()
-    #     # result_quantized
-    #     for row in result_quantized:
-    #         window = row[0]
-    #         points = row[1:]
-    #         for point in points:
-    #             azi = point[1]
-    #             ele = point[2]
-    #             plt.scatter(window, azi, c='b', s=1)
-    #             # print(window, azi, ele)
-    #     plt.grid()
+    # result_averaged_dict = {}
     #
-    #     # Averaged
-    #     for window in result_averaged_dict.iterkeys():
-    #         azi = result_averaged_dict[window][1]
-    #         plt.scatter(window, azi, c='r', s=1)
+    # for row in result_quantized:
+    #     bin = row[0]
+    #     label = 0  # TODO
     #
-    #     # Kmeans
-    #     for window in result_kmeans_dict.iterkeys():
-    #         item = result_kmeans_dict[window]
-    #         if len(item) == 3:
-    #             # this is only one point
-    #             azi = item[1]
-    #             plt.scatter(window, azi, c='r', s=1)
-    #         elif len(item) == 2:
-    #             # 2 sources
-    #             for it in item:
-    #                 azi = it[1]
-    #                 plt.scatter(window, azi, c='g', s=1)
-    #     plt.show()
+    #     azis = np.asarray(row[1:])[:, 1]
+    #     eles = np.asarray(row[1:])[:, 2]
+    #
+    #     if method == 'kmeans':
+    #         x = np.asarray([azis, eles]).T
+    #         # print (bin)
+    #         kmeans1 = KMeans(n_clusters=1, random_state=0).fit(x)
+    #         kmeans2 = KMeans(n_clusters=2, random_state=0).fit(x)
+    #         rate = kmeans1.inertia_ / kmeans2.inertia_
+    #
+    #         if rate > params['kmeans_rate_th']:
+    #             # 2 clusters:
+    #             result_averaged_dict[bin] = []
+    #             for c in kmeans2.cluster_centers_:
+    #                 print(bin, azi, ele)
+    #                 azi = c[0]
+    #                 ele = c[1]
+    #                 result_averaged_dict[bin].append([label, azi, ele])
+    #                 print result_averaged_dict[bin]
+    #         else:
+    #             # 1 cluster: median
+    #             azi = circmedian(azis, unit='deg')
+    #             ele = np.median(eles)
+    #             result_averaged_dict[bin] = [label, azi, ele]
+    #
+    #     ## Single source approach
+    #     elif method == 'median':
+    #         azi = circmedian(azis, unit='deg')
+    #         ele = np.median(eles)
+    #         result_averaged_dict[bin] = [label, azi, ele]
+    #
+    #     elif method == 'mean':
+    #         azi = scipy.stats.circmean(azis, high=180, low=-180)
+    #         ele = np.mean(eles)
+    #         result_averaged_dict[bin] = [label, azi, ele]
 
-    return result, result_quantized, result_averaged_dict
+    return result, result_quantized
 
 
 
@@ -245,25 +165,30 @@ def find_regions(result_averaged_dict, th=30):
     starts = []
     ends = []
     frames = result_averaged_dict.keys()
+    # Ensure ascending order
+    frames.sort()
 
-    # print(frames)
+    print(frames)
     # Add first start
     # starts.append(frames[0])
 
     for i, f in enumerate(frames[:-1]):
-        # print (f, f - frames[i-1])
+        print('---')
+        print (f, f - frames[i-1])
         if abs(f - frames[i-1]) > th :
             # start
             starts.append(f)
-        # print (f,frames[i + 1] - f)
+        print (f,frames[i + 1] - f)
         if frames[i + 1] - f > th :
             # end
             ends.append(f)
 
-        # print(starts, ends)
+        print(starts, ends)
 
     # Add last end
     ends.append(frames[-1])
+    print('++++++++')
+    print(starts, ends)
 
     assert len(starts) == len(ends)
 
@@ -274,7 +199,7 @@ def find_regions(result_averaged_dict, th=30):
     return edges
 
 
-
+# Assumes no overlapping: compute mean of each region (source activity)
 def group_sources(result_averaged_dict):
 
     hop_size = 0.02 # s
@@ -311,125 +236,372 @@ def group_sources(result_averaged_dict):
 
 
 
+def find_regions_q(result_quantized, th=30):
+
+    starts = []
+    ends = []
+    frames = []
+    for row in result_quantized:
+        frames.append(row[0])
+    # Ensure ascending order
+    frames.sort()
+
+    # print(frames)
+    # Add first start
+    # starts.append(frames[0])
+
+    for i, f in enumerate(frames[:-1]):
+        # print('---')
+        # print (f, f - frames[i-1])
+        if abs(f - frames[i-1]) > th :
+            # start
+            starts.append(f)
+        # print (f,frames[i + 1] - f)
+        if frames[i + 1] - f > th :
+            # end
+            ends.append(f)
+
+        # print(starts, ends)
+
+    # Add last end
+    ends.append(frames[-1])
+    # print('++++++++')
+    # print(starts, ends)
+
+    assert len(starts) == len(ends)
+
+    edges = []
+    for s, e in zip(starts, ends):
+        edges.append([s, e])
+
+    return edges
+
+
+# Assumes 2-overlapping, but only in the whole range of activity continuity
+# Build result_averaged_dict by median-averaging the whole activity range
+def group_sources_q(result_quantized, params):
+
+    hop_size = params['required_window_hop'] # s
+    file_duration = params['file_duration'] # s
+    regions = find_regions_q(result_quantized)
+    metadata_result_array = []
+    result_averaged_dict = {}
+
+    azis = []
+    eles = []
+
+    # find mean of each region
+    for r_idx, r in enumerate(regions):
+        # print('region '+str(r_idx))
+        start = r[0]
+        end = r[1]
+        # print('start ',start)
+        # print('end ',end)
+
+        # Get azis and eles for each time region
+        azis.append([])
+        eles.append([])
+        for row in result_quantized:
+            frame = row[0]
+            if frame >= start and frame <= end:
+                # print(frame)
+                for v in row[1:]:
+                    # print(v[1:])
+                    azis[r_idx].append(v[1])
+                    eles[r_idx].append(v[2])
+
+        # Kmeans expects values as degrees
+        x = deg2rad(np.asarray([azis[r_idx], eles[r_idx]]).T)
+        kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
+        kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+        rate = kmeans1.inertia_ / kmeans2.inertia_
+        # print(rate)
+
+        cluster_centers = kmeans2.cluster_centers_ if rate > params['kmeans_rate_th'] else kmeans1.cluster_centers_
+
+        # Output values are expected in degrees
+        for c in cluster_centers:
+            c = rad2deg(c)
+            metadata_result_array.append([None, start * hop_size, end * hop_size, c[1], c[0], None])
+
+        # Build averaged dict
+        # Add all missing time windows...
+        num_frames = file_duration/hop_size
+        for frame in range(int(num_frames)):
+        # for row in result_quantized:
+        #     frame = row[0]
+            if frame >= start and frame <= end:
+                    result_averaged_dict[frame] = [0, c[0], c[1]]
+
+        # for frame, value in result_quantized.iteritems():
+        #     if frame >= start and frame <= end:
+        #         # print (frame, value)
+        #         azis.append(value[1])
+        #         eles.append(value[2])
+        #         # eles.append(value[2])
+        # print(azis)
+        # print(eles)
+        # azis = result_averaged_dict.
+
+        # mean_azi = scipy.stats.circmean(azis, high=180, low=-180)
+        # std_azi = scipy.stats.circstd(azis, high=180, low=-180)
+        # mean_ele = np.mean(eles)
+        # std_ele = np.std(eles)
+        #
+        # metadata_result_array.append([ None, start*hop_size, end*hop_size, mean_ele, mean_azi, None ])
+
+    return metadata_result_array, result_averaged_dict
+
+
+
+# Assumes overlapping, compute (1,2)-Kmeans on each segment
+def group_sources_q_overlap(result_quantized, params):
+
+    result_averaged_dict = {}
+
+    # TODO: MORE PYTHONIC
+    frames = []
+    for row in result_quantized:
+        frames.append(row[0])
+    rates = []
+    inertia1 = []
+    inertia2 = []
+
+    std_azis = []
+    std_eles = []
+    std_all = []
+
+    std_th = 10.
+    label = 0
+
+    for r_idx, row in enumerate(result_quantized):
+        frame = row[0]
+        azis = []
+        eles = []
+
+        for v in row[1:]:
+            # print(v[1:])
+            azis.append(v[1])
+            eles.append(v[2])
+
+
+
+        x = deg2rad(np.asarray([azis, eles]).T)
+        kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
+        kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+        rate = kmeans1.inertia_ / kmeans2.inertia_
+
+        std_azis.append(scipy.stats.circstd(azis, high=180, low=-180))
+        std_eles.append(np.std(eles))
+        std_all.append(std_azis[-1]/2 * std_eles[-1])
+
+        if std_all[-1] >= std_th:
+            # 2 clusters:
+            x = deg2rad(np.asarray([azis, eles]).T)
+            kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+            result_averaged_dict[frame] = []
+            for c in kmeans2.cluster_centers_:
+                # print(frame, azi, ele)
+                azi = rad2deg(c[0])
+                ele = rad2deg(c[1])
+                result_averaged_dict[frame].append([label, azi, ele])
+                print result_averaged_dict[frame]
+        else:
+            # 1 cluster: median
+            azi = circmedian(np.asarray(azis), unit='deg')
+            ele = np.median(eles)
+            result_averaged_dict[frame] = [label, azi, ele]
+
+
+        #
+        # inertia1.append(kmeans1.inertia_/len(azis))
+        # inertia2.append(kmeans2.inertia_/len(azis))
+        #
+        # rates.append(rate)
+        # # print(frame, rate)
+        # # kmeans1.plot(x, "k1, frame: " + str(frame))
+        # # kmeans2.plot(x, "k2, frame: " + str(frame))
+        #
+        # if rate > params['kmeans_rate_th']:
+        #     cluster_centers = kmeans2.cluster_centers_
+        #     #
+        # else:
+        #     cluster_centers = kmeans1.cluster_centers_
+        #
+        #
+        # result_averaged_dict[frame] = []
+        #
+        # # One source
+        # if len(cluster_centers) == 1:
+        #     c = rad2deg(cluster_centers)
+        #     result_averaged_dict[frame] = c[0]
+        # # Two sources:
+        # else:
+        #     result_averaged_dict[frame] = []
+        #     for c in cluster_centers:
+        #         c = rad2deg(c)
+        #         result_averaged_dict[frame].append(c)
+
+    # h = params['required_window_hop']
+
+    # plt.figure()
+    # plt.suptitle('kmeans inertias')
+    # plt.scatter(np.asarray(frames)*h,inertia1,label='inertia1')
+    # plt.scatter(np.asarray(frames)*h,inertia2,label='inertia2')
+    # plt.legend()
+    # # plt.yscale('log')
+    # plt.grid()
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.suptitle('diff')
+    # plt.scatter(np.asarray(frames)*h,np.asarray(inertia2) - np.asarray(inertia1),label='inertia1')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.suptitle('kmeans rates')
+    # plt.scatter(np.asarray(frames)*h,rates,label='rates')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
+
+    plt.figure()
+    plt.suptitle('kmeans stds')
+    # plt.scatter(frames,std_azis,label='azis')
+    # plt.scatter(frames,std_eles,label='eles')
+    plt.scatter(frames,std_all,label='all')
+    plt.axhline(y=std_th)
+    # plt.scatter(frames,np.asarray(std_azis)/2*np.asarray(std_eles),label='mult')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    metadata_result_array = None
+    return metadata_result_array, result_averaged_dict
+
+
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # METHODS
-
-def doa_method_variance2(data, sr, params):
-
-    X = preprocess(data, sr, params)
-    N = X.get_num_time_bins()
-    K = X.get_num_frequency_bins()
-    r = params['r']
-
-    # Diffuseness threshold
-    doa = psa.compute_DOA(X)
-    directivity = X.compute_ksi_re(r=r)
-    directivity_mask = directivity.compute_mask(th=params['directivity_th'])
-
-    if params['plot']: psa.plot_doa(doa, title=str(r))
-    if params['plot']: plt.show()
-
-    # Doa Variance
-    vicinity_radius = params['vicinity_radius']
-    if np.size(vicinity_radius) == 1:
-        # Square!
-        r_k = vicinity_radius
-        r_n = vicinity_radius
-    elif np.size(vicinity_radius) == 2:
-        # Rectangle! [k, n]
-        r_k = vicinity_radius[0]
-        r_n = vicinity_radius[1]
-    else:
-        Warning.warn()
-
-    std = np.zeros((2, K, N))
-
-    for k in range(r_k, K-r_k):
-        for n in range(r_n, N-r_n):
-
-            # range_k = range(k-r_k, k+r_k+1)
-            # range_n = range(n-r_n, n+r_n+1)
-            std[0, k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
-            std[1, k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
-
-    # Edges: large value
-    max_v = [np.max(std[0]), np.max(std[1])]
-    for m in range(2):
-        for k in range(0, r_k):
-            # std[m, k, :] = std[m, k+vicinity_radius, :]
-            std[m, k, :] = max_v[m]
-        for k in range(K-r_k, K):
-            # std[m, k, :] = std[m, K-vicinity_radius-1, :]
-            std[m, k, :] = max_v[m]
-        for n in range(0, r_n):
-            # std[m, :, n] = std[m, :, n + vicinity_radius]
-            std[m, :, n] = max_v[m]
-        for n in range(N - r_n, N):
-            # std[m, :, n] = std[m, :, N - vicinity_radius - 1,]
-            std[m, :, n] = max_v[m]
-
-    # if params['plot']:
-    #     plt.figure(figsize=plt.figaspect(1 / 2.))
-    #     plt.subplot(211)
-    #     plt.pcolormesh(std[0])
-    #     plt.colorbar()
-    #     plt.subplot(212)
-    #     plt.pcolormesh(std[1])
-    #     plt.colorbar()
-    #     plt.show()
-
-    # Scale values to min/max
-    std_azi_max = np.max(std[0])
-    std_ele_max = np.max(std[1])
-
-    std_scaled = np.zeros((2, K, N))
-    std_scaled[0] = std[0] / std_azi_max
-    std_scaled[1] = std[1] / std_ele_max
-
-    # Invert values
-    std_scaled_inv = 1 - std_scaled
-
-    if params['plot']:
-        plt.figure(figsize=plt.figaspect(1 / 2.))
-        plt.subplot(211)
-        plt.pcolormesh(std_scaled_inv[0])
-        plt.colorbar()
-        plt.subplot(212)
-        plt.pcolormesh(std_scaled_inv[1])
-        plt.colorbar()
-        plt.show()
-
-    doa_std_azi = psa.Stft(doa.t, doa.f, std_scaled_inv[0], doa.sample_rate)
-    doa_std_mask_azi = doa_std_azi.compute_mask(th=params['doa_std_th'])
-    # doa_std_ele = psa.Stft(doa.t, doa.f, std_scaled_inv[1], doa.sample_rate)
-    # doa_std_mask_ele = doa_std_ele.compute_mask(th=params['doa_std_th'])
-    # doa_std_mask = doa_std_mask_ele.apply_mask(doa_std_mask_azi)
-    doa_std_mask = doa_std_mask_azi
-
-    mask2 = doa_std_mask.apply_mask(directivity_mask)
-    doa_th = doa.apply_mask(mask2)
-
-    if params['plot']:
-        psa.plot_doa(doa, title='doa')
-
-        psa.plot_mask(directivity_mask, title='directivity mask')
-        psa.plot_doa(doa.apply_mask(directivity_mask), title='directivity mask')
-
-        # psa.plot_mask(doa_std_mask_azi, title='doa std mask_azi')
-        # psa.plot_doa(doa.apply_mask(doa_std_mask_azi), title='doa std mask_azi')
-
-        # psa.plot_mask(doa_std_mask_ele, title='doa std mask_ele')
-        # psa.plot_doa(doa.apply_mask(doa_std_mask_ele), title='doa std mask_ele')
-
-        psa.plot_mask(doa_std_mask, title='doa std mask')
-        psa.plot_doa(doa.apply_mask(doa_std_mask), title='doa std mask')
-
-        psa.plot_mask(mask2, title='mask 2')
-        psa.plot_doa(doa_th)
-        plt.show()
-
-    return compute_statistics(doa_th, sr, params, method='kmeans')
-
+#
+# def doa_method_variance2(data, sr, params):
+#
+#     X = preprocess(data, sr, params)
+#     N = X.get_num_time_bins()
+#     K = X.get_num_frequency_bins()
+#     r = params['r']
+#
+#     # Diffuseness threshold
+#     doa = psa.compute_DOA(X)
+#     directivity = X.compute_ksi_re(r=r)
+#     directivity_mask = directivity.compute_mask(th=params['directivity_th'])
+#
+#     if params['plot']: psa.plot_doa(doa, title=str(r))
+#     if params['plot']: plt.show()
+#
+#     # Doa Variance
+#     doa_std_vicinity_radius = params['doa_std_vicinity_radius']
+#     if np.size(doa_std_vicinity_radius) == 1:
+#         # Square!
+#         r_k = doa_std_vicinity_radius
+#         r_n = doa_std_vicinity_radius
+#     elif np.size(doa_std_vicinity_radius) == 2:
+#         # Rectangle! [k, n]
+#         r_k = doa_std_vicinity_radius[0]
+#         r_n = doa_std_vicinity_radius[1]
+#     else:
+#         Warning.warn()
+#
+#     std = np.zeros((2, K, N))
+#
+#     for k in range(r_k, K-r_k):
+#         for n in range(r_n, N-r_n):
+#
+#             # range_k = range(k-r_k, k+r_k+1)
+#             # range_n = range(n-r_n, n+r_n+1)
+#             std[0, k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
+#             std[1, k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
+#
+#     # Edges: large value
+#     max_v = [np.max(std[0]), np.max(std[1])]
+#     for m in range(2):
+#         for k in range(0, r_k):
+#             # std[m, k, :] = std[m, k+doa_std_vicinity_radius, :]
+#             std[m, k, :] = max_v[m]
+#         for k in range(K-r_k, K):
+#             # std[m, k, :] = std[m, K-doa_std_vicinity_radius-1, :]
+#             std[m, k, :] = max_v[m]
+#         for n in range(0, r_n):
+#             # std[m, :, n] = std[m, :, n + doa_std_vicinity_radius]
+#             std[m, :, n] = max_v[m]
+#         for n in range(N - r_n, N):
+#             # std[m, :, n] = std[m, :, N - doa_std_vicinity_radius - 1,]
+#             std[m, :, n] = max_v[m]
+#
+#     # if params['plot']:
+#     #     plt.figure(figsize=plt.figaspect(1 / 2.))
+#     #     plt.subplot(211)
+#     #     plt.pcolormesh(std[0])
+#     #     plt.colorbar()
+#     #     plt.subplot(212)
+#     #     plt.pcolormesh(std[1])
+#     #     plt.colorbar()
+#     #     plt.show()
+#
+#     # Scale values to min/max
+#     std_azi_max = np.max(std[0])
+#     std_ele_max = np.max(std[1])
+#
+#     std_scaled = np.zeros((2, K, N))
+#     std_scaled[0] = std[0] / std_azi_max
+#     std_scaled[1] = std[1] / std_ele_max
+#
+#     # Invert values
+#     std_scaled_inv = 1 - std_scaled
+#
+#     if params['plot']:
+#         plt.figure(figsize=plt.figaspect(1 / 2.))
+#         plt.subplot(211)
+#         plt.pcolormesh(std_scaled_inv[0])
+#         plt.colorbar()
+#         plt.subplot(212)
+#         plt.pcolormesh(std_scaled_inv[1])
+#         plt.colorbar()
+#         plt.show()
+#
+#     doa_std_azi = psa.Stft(doa.t, doa.f, std_scaled_inv[0], doa.sample_rate)
+#     doa_std_mask_azi = doa_std_azi.compute_mask(th=params['doa_std_th'])
+#     # doa_std_ele = psa.Stft(doa.t, doa.f, std_scaled_inv[1], doa.sample_rate)
+#     # doa_std_mask_ele = doa_std_ele.compute_mask(th=params['doa_std_th'])
+#     # doa_std_mask = doa_std_mask_ele.apply_mask(doa_std_mask_azi)
+#     doa_std_mask = doa_std_mask_azi
+#
+#     mask2 = doa_std_mask.apply_mask(directivity_mask)
+#     doa_th = doa.apply_mask(mask2)
+#
+#     if params['plot']:
+#         psa.plot_doa(doa, title='doa')
+#
+#         psa.plot_mask(directivity_mask, title='directivity mask')
+#         psa.plot_doa(doa.apply_mask(directivity_mask), title='directivity mask')
+#
+#         # psa.plot_mask(doa_std_mask_azi, title='doa std mask_azi')
+#         # psa.plot_doa(doa.apply_mask(doa_std_mask_azi), title='doa std mask_azi')
+#
+#         # psa.plot_mask(doa_std_mask_ele, title='doa std mask_ele')
+#         # psa.plot_doa(doa.apply_mask(doa_std_mask_ele), title='doa std mask_ele')
+#
+#         psa.plot_mask(doa_std_mask, title='doa std mask')
+#         psa.plot_doa(doa.apply_mask(doa_std_mask), title='doa std mask')
+#
+#         psa.plot_mask(mask2, title='mask 2')
+#         psa.plot_doa(doa_th)
+#         plt.show()
+#
+#     return fold_doa_into_results_vector(doa_th, sr, params, method='kmeans')
+#
 
 def doa_method_variance(data, sr, params):
 
@@ -447,7 +619,8 @@ def doa_method_variance(data, sr, params):
     if params['plot']: plt.show()
 
     # Doa Variance
-    vicinity_radius = params['vicinity_radius']
+    # Aximuth std depends on the location!! so let's just use elevation stf
+    vicinity_radius = params['doa_std_vicinity_radius']
     if np.size(vicinity_radius) == 1:
         # Square!
         r_k = vicinity_radius
@@ -459,93 +632,97 @@ def doa_method_variance(data, sr, params):
     else:
         Warning.warn()
 
-    std = np.zeros((2, K, N))
+    std = np.zeros((K, N))
 
     for k in range(r_k, K-r_k):
         for n in range(r_n, N-r_n):
-
-            # range_k = range(k-r_k, k+r_k+1)
-            # range_n = range(n-r_n, n+r_n+1)
-            std[0, k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
-            std[1, k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
+            # std[0, k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
+            std[k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
 
     # Edges: large value
-    max_v = [np.max(std[0]), np.max(std[1])]
-    for m in range(2):
-        for k in range(0, r_k):
-            # std[m, k, :] = std[m, k+vicinity_radius, :]
-            std[m, k, :] = max_v[m]
-        for k in range(K-r_k, K):
-            # std[m, k, :] = std[m, K-vicinity_radius-1, :]
-            std[m, k, :] = max_v[m]
-        for n in range(0, r_n):
-            # std[m, :, n] = std[m, :, n + vicinity_radius]
-            std[m, :, n] = max_v[m]
-        for n in range(N - r_n, N):
-            # std[m, :, n] = std[m, :, N - vicinity_radius - 1,]
-            std[m, :, n] = max_v[m]
-
-    # if params['plot']:
-    #     plt.figure(figsize=plt.figaspect(1 / 2.))
-    #     plt.subplot(211)
-    #     plt.pcolormesh(std[0])
-    #     plt.colorbar()
-    #     plt.subplot(212)
-    #     plt.pcolormesh(std[1])
-    #     plt.colorbar()
-    #     plt.show()
+    std_max = np.max(std)
+    for k in range(0, r_k):
+        # std[m, k, :] = std[m, k+doa_std_vicinity_radius, :]
+        std[k, :] = std_max
+    for k in range(K-r_k, K):
+        # std[m, k, :] = std[m, K-doa_std_vicinity_radius-1, :]
+        std[ k, :] = std_max
+    for n in range(0, r_n):
+        # std[m, :, n] = std[m, :, n + doa_std_vicinity_radius]
+        std[:, n] = std_max
+    for n in range(N - r_n, N):
+        # std[m, :, n] = std[m, :, N - doa_std_vicinity_radius - 1,]
+        std[:, n] = std_max
 
     # Scale values to min/max
-    std_azi_max = np.max(std[0])
-    std_ele_max = np.max(std[1])
-
-    std_scaled = np.zeros((2, K, N))
-    std_scaled[0] = std[0] / std_azi_max
-    std_scaled[1] = std[1] / std_ele_max
+    std_scaled = std / std_max
 
     # Invert values
     std_scaled_inv = 1 - std_scaled
 
     if params['plot']:
-        plt.figure(figsize=plt.figaspect(1 / 2.))
-        plt.subplot(211)
-        plt.pcolormesh(std_scaled_inv[0])
-        plt.colorbar()
-        plt.subplot(212)
-        plt.pcolormesh(std_scaled_inv[1])
+        plt.pcolormesh(std_scaled_inv)
         plt.colorbar()
         plt.show()
 
-    doa_std_azi = psa.Stft(doa.t, doa.f, std_scaled_inv[0], doa.sample_rate)
-    doa_std_mask_azi = doa_std_azi.compute_mask(th=params['doa_std_th'])
-    # doa_std_ele = psa.Stft(doa.t, doa.f, std_scaled_inv[1], doa.sample_rate)
-    # doa_std_mask_ele = doa_std_ele.compute_mask(th=params['doa_std_th'])
-    # doa_std_mask = doa_std_mask_ele.apply_mask(doa_std_mask_azi)
-    doa_std_mask = doa_std_mask_azi
+
+    doa_std = psa.Stft(doa.t, doa.f, std_scaled_inv, doa.sample_rate)
+    doa_std_mask = doa_std.compute_mask(th=params['doa_std_th'])
 
     mask2 = doa_std_mask.apply_mask(directivity_mask)
     doa_th = doa.apply_mask(mask2)
 
+
+    # MEdian averAGE
+    median_averaged_doa = np.empty(doa.data.shape)
+    median_averaged_doa.fill(np.nan)
+    vicinity_size = (2*r_k-1) + (2*r_n-1)
+    for k in range(r_k, K - r_k):
+        for n in range(r_n, N - r_n):
+
+            azis = discard_nans(doa_th.data[0, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1].flatten())
+            if azis.size > vicinity_size*0.75:
+                median_averaged_doa[0, k, n] = circmedian(azis, 'rad')
+            # else:
+            #     median_averaged_doa[0, k, n] = np.nan
+
+            eles = discard_nans(doa_th.data[1, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1].flatten())
+            if eles.size > vicinity_size*0.75:
+                median_averaged_doa[1, k, n] = np.median(eles)
+            # else:
+            #     median_averaged_doa[1, k, n] = np.nan
+
+            # median_averaged_doa[0, k, n] = circmedian(discard_nans(doa_th.data[0, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1].flatten()), 'rad')
+            # median_averaged_doa[1, k, n] = np.median(discard_nans(doa_th.data[1, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1]))
+    # # Edges: nan
+    # for k in range(0, r_k):
+    #     median_averaged_doa[:, k, :] = np.nan
+    # for k in range(K - r_k, K):
+    #     median_averaged_doa[:, k, :] = np.nan
+    # for n in range(0, r_n):
+    #     median_averaged_doa[:, :, n] = np.nan
+    # for n in range(N - r_n, N):
+    #     median_averaged_doa[:, :, n] = np.nan
+    # Convert to Stft
+    doa_median = psa.Stft(doa.t, doa.f, median_averaged_doa, doa.sample_rate)
+
     if params['plot']:
         psa.plot_doa(doa, title='doa')
 
-        psa.plot_mask(directivity_mask, title='directivity mask')
+        # psa.plot_mask(directivity_mask, title='directivity mask')
         psa.plot_doa(doa.apply_mask(directivity_mask), title='directivity mask')
 
-        # psa.plot_mask(doa_std_mask_azi, title='doa std mask_azi')
-        # psa.plot_doa(doa.apply_mask(doa_std_mask_azi), title='doa std mask_azi')
-
-        # psa.plot_mask(doa_std_mask_ele, title='doa std mask_ele')
-        # psa.plot_doa(doa.apply_mask(doa_std_mask_ele), title='doa std mask_ele')
-
-        psa.plot_mask(doa_std_mask, title='doa std mask')
+        # psa.plot_mask(doa_std_mask, title='doa std mask')
         psa.plot_doa(doa.apply_mask(doa_std_mask), title='doa std mask')
 
-        psa.plot_mask(mask2, title='mask 2')
-        psa.plot_doa(doa_th)
+        # psa.plot_mask(mask2, title='mask 2')
+        psa.plot_doa(doa_th, title='doa mask2')
+
+        psa.plot_doa(doa_median, title='doa circmedian')
         plt.show()
 
-    return compute_statistics(doa_th, sr, params, method='median')
+    # return fold_doa_into_results_vector(doa_th, sr, params, method='median')
+    return fold_doa_into_results_vector(doa_median, sr, params, method='median')
 
 
 def doa_method_median(data, sr, params):
@@ -560,7 +737,7 @@ def doa_method_median(data, sr, params):
     directivity_mask = directivity.compute_mask(th=params['directivity_th'])
     doa_th = doa.apply_mask(directivity_mask)
 
-    return compute_statistics(doa_th, sr, params, method='median')
+    return fold_doa_into_results_vector(doa_th, sr, params, method='median')
 
 
 
@@ -710,4 +887,4 @@ def doa_method_mean(data, sr, params):
     #         # plt.vlines(postprocessed_offsets, ymin_azi, ymax_azi, linestyles='dashed', colors='b')
     #         plt.show()
 
-    return compute_statistics(doa_th, sr, params, method='mean')
+    return fold_doa_into_results_vector(doa_th, sr, params, method='mean')

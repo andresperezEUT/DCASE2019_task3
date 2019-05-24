@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats
+import matplotlib.pyplot as plt
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,7 +155,9 @@ class HybridKmeans_implementation:
         :param p2: [azi, ele] in radians
         :return: spherical distance
         """
-        return np.arccos((np.sin(p1[1]) * np.sin(p2[1])) + (np.cos(p1[1]) * np.cos(p2[1]) * np.cos(p2[0] - p1[0])))
+        #TODO: HOLD WARNINGS FOR THE CASE OF K*PI/2
+        d = np.arccos((np.sin(p1[1]) * np.sin(p2[1])) + (np.cos(p1[1]) * np.cos(p2[1]) * np.cos(p2[0] - p1[0])))
+        return d
 
     def initialize_centroids(self, points):
         """returns k centroids from the initial points"""
@@ -196,6 +199,8 @@ class HybridKmeans_implementation:
         plt.scatter(points[:, 0], points[:, 1], c=self.closest_centers_)
         for c in self.cluster_centers_:
             plt.scatter(c[0], c[1], c='r')
+            plt.xlim(-np.pi, np.pi)
+            plt.ylim(-np.pi/2, np.pi/2)
         plt.show()
 
 
