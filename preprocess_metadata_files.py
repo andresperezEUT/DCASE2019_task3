@@ -7,6 +7,9 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
+# new imports
+import pandas as pd
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 preset = '0' # Default preset
@@ -20,6 +23,13 @@ data_folder_path = os.path.join(dataset_dir, dataset_type_folder)
 # Get path to groundtruth metadata
 gt_folder = 'metadata' + "_" + params['mode']
 gt_folder_path = os.path.join(dataset_dir, gt_folder)
+
+# store ground truth info for classification
+files =[]
+labels = []
+splits = []
+irs = []
+parents = []
 
 # Iterate over all audio files
 for audio_file_name in os.listdir(data_folder_path):
@@ -56,17 +66,30 @@ for audio_file_name in os.listdir(data_folder_path):
                     sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation, beamforming_method)
 
                     # Here you go!
-                    plt.figure()
-                    plt.suptitle(sound_class_string)
-                    plt.plot(sound_event_mono)
-                    plt.grid()
+                    # plt.figure()
+                    # plt.suptitle(sound_class_string)
+                    # plt.plot(sound_event_mono)
+                    # plt.grid()
 
-                    sf.write('/Users/andres.perez/Desktop/sources/'+sound_class_string+str(start_frame)+'.wav',sound_event_mono,sr)
+                    # sf.write('/Users/andres.perez/Desktop/sources/'+sound_class_string+str(start_frame)+'.wav',sound_event_mono,sr)
+                    sf.write('data/mono_dev/' + sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '.wav', sound_event_mono, sr)
+
+                    # create csv with split info for development
+                    files.append(sound_class_string+str(start_frame)+'.wav')
+                    labels.append(sound_class_string)
+                    splits.append(int(metadata_file_name.split('_')[0][-1]))
+                    irs.append(int(metadata_file_name.split('_')[1][-1]))
+                    parents.append(metadata_file_name)
 
 
-
-
-plt.show()
+gt_classif = pd.DataFrame(files, columns=["file"])
+gt_classif['label'] = labels
+gt_classif['split'] = splits
+gt_classif['ir'] = irs
+gt_classif['parent'] = parents
+gt_classif.to_csv('gt_classif.csv', index=False)
+print('EOF')
+# plt.show()
 
 
 

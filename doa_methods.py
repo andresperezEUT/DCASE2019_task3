@@ -405,7 +405,7 @@ def group_sources_q_overlap(result_quantized, params):
                 azi = rad2deg(c[0])
                 ele = rad2deg(c[1])
                 result_averaged_dict[frame].append([label, azi, ele])
-                print result_averaged_dict[frame]
+                print(result_averaged_dict[frame])
         else:
             # 1 cluster: median
             azi = circmedian(np.asarray(azis), unit='deg')
