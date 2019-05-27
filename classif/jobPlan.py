@@ -32,7 +32,8 @@ mode_last_patches = ['discard', 'fill']
 # models = ['js_tidy']
 
 # output_file = 'vgg_md_patch_len2550'
-output_file = 'vgg_md_basic_external_params'
+# output_file = 'vgg_md_basic_external_params'
+output_file = 'vgg_md_basic_external_params_dropout_32filt'
 models = ['vgg_md']
 
 # output_file = 'crnn_patch_len2550'

@@ -692,7 +692,9 @@ def get_model_vgg_md(params_learn=None, params_extract=None):
     """
 
     K.set_image_data_format('channels_first')
-    n_filt = 64
+    # n_filt = 64
+    # for small datasets
+    n_filt = 32
 
     input_shape = (1, params_extract.get('patch_len'), params_extract.get('n_mels'))
     channel_axis = 1
@@ -738,10 +740,10 @@ def get_model_vgg_md(params_learn=None, params_extract=None):
                     activation='relu')(spec_x)
     spec_x = BatchNormalization(axis=1)(spec_x)
     spec_x = MaxPooling2D(pool_size=(2, 2), data_format="channels_first")(spec_x)
-    # if params_learn.get('dropout'):
-    #     spec_x = Dropout(0.5)(spec_x)
-    # else:
-    spec_x = Dropout(0.3)(spec_x)
+    if params_learn.get('dropout'):
+        spec_x = Dropout(0.5)(spec_x)
+    else:
+        spec_x = Dropout(0.3)(spec_x)
 
 
     # third conv block

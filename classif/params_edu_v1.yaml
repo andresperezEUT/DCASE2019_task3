@@ -46,7 +46,7 @@ learn:
   delta_eps_LSR: false
   delta_k_LSR: 0
   distri_prior_LSR: false
-  dropout: false
+  dropout: true
   dropout_prob: false
   early_stop: val_acc
   eps_LSR_clean: 0
