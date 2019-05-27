@@ -59,7 +59,7 @@ learn:
   mode_class_weight: false
   model: crnn
   n_classes: 11
-  n_epochs: 5
+  n_epochs: 100
   optim: Adam
   origin: useless
   patience: 15
