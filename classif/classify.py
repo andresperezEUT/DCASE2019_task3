@@ -373,8 +373,8 @@ print('Number of clips considered as dev set: {0}'.format(len(ff_list_dev)))
 print('Number of labels loaded for dev set: {0}'.format(len(labels_audio_dev)))
 
 # vip determine the validation setup according to the folds, and perform training / val / test for each fold
-# for kfo in range(1, 5):
-for kfo in range(1, 2):
+for kfo in range(1, 5):
+# for kfo in range(1, 2):
     print('\n===Processing fold {} within the x-val setup...'.format(kfo))
     print('=========================================================================================\n')
 

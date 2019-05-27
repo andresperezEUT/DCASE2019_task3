@@ -21,7 +21,8 @@ N = 3
 
 # params to try************************************
 lrs = [0.001, 0.0001]
-patch_lens = [25, 50, 75, 100]
+# patch_lens = [25, 50, 75, 100]
+patch_lens = [25, 50]
 output_file = 'js_tidy_patch_len255075100'
 models = ['js_tidy']
 
