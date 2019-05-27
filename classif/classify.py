@@ -374,10 +374,11 @@ print('Number of labels loaded for dev set: {0}'.format(len(labels_audio_dev)))
 
 # vip determine the validation setup according to the folds, and perform training / val / test for each fold
 for kfo in range(1, 5):
-# for kfo in range(1, 2):
-    print('\n===Processing fold {} within the x-val setup...'.format(kfo))
-    print('=========================================================================================\n')
-
+# for kfo in range(1, 3):
+    print('\n=========================================================================================================')
+    print('===Processing fold {} within the x-val setup...'.format(kfo))
+    print('=========================================================================================================\n')
+    # x-val setup given by DCASE organizers
     if kfo == 1:
         splits_tr = [3, 4]
         splits_val = [2]
@@ -403,7 +404,7 @@ for kfo in range(1, 5):
 
     # SC
     if len(tr_files) + len(val_files) + len(te_files) != len(ff_list_dev):
-        print('You messed up in x-val setup for fold: {0}'.format(len(kfo)))
+        print('ERROR: You messed up in x-val setup for fold: {0}'.format(len(kfo)))
         print('{} is not {}'.format(len(tr_files) + len(val_files) + len(te_files), len(ff_list_dev)))
 
     # ============================================================BATCH GENERATION
@@ -721,6 +722,8 @@ for kfo in range(1, 5):
         pred['label'] = pred_labels
         pred['label_int'] = pred_label_files_int
         pred.to_csv(params_files.get('predictions'), index=False)
+        del pred
+
     else:
         # fold > 1. There is already a predictions file
         pred = pd.read_csv(params_files.get('predictions'))

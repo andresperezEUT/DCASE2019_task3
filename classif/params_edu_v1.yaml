@@ -1,11 +1,11 @@
 ctrl:
-  count_trial: 7
+  count_trial: 1
   dataset_path: ../data/mono_data/
   execute: gpu_ds
   feat_ext: true
   learn: true
   load_model: trained_models/out_eval/model_debug_toy.h5
-  output_file: model_feat_DA_others
+  output_file: debug_eval_trial
   pipeline: T_F
   plot_figs: false
 extract:
@@ -26,13 +26,16 @@ extract:
   n_mels: 128
   normalize_audio: true
   normalize_mel_bands: false
-  patch_hop: 12  # 12 frames means 250 ms that we slide the patches
-  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
+#  patch_hop: 12  # 12 frames means 250 ms that we slide the patches
+#  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
+  patch_hop: 50  # debug with minimum patches
+  patch_len: 50  #
   snip_hop: 24000
   snip_len: 48000
   spectrogram_type: power
   win_length_samples: 1920
   window: hamming_asymmetric
+  mode_last_patch: fill # dica
 learn:
   alpha_mobilenet: 0.5
   LSR: false
@@ -57,9 +60,10 @@ learn:
   mixup_mode: intra
   mixup_warmup_epochs: 5
   mode_class_weight: false
-  model: crnn
+  model: debug
   n_classes: 11
-  n_epochs: 100
+#  n_epochs: 100
+  n_epochs: 1
   optim: Adam
   origin: useless
   patience: 15

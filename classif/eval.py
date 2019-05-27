@@ -197,7 +197,6 @@ class Evaluator (object):
         doing it on the public one may be misleading (only 301 files, ie few files per class)
         """
         print('\n=====Evaluating ACCURACY - PER CLASS ======================================================')
-        scores = {}
         # init with nested dicts
         scores = {key: {'nb_files': 0, 'acc_cum': 0} for key in self.list_labels}
 

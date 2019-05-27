@@ -176,7 +176,7 @@ def build_model_tf_basic(params_learn=None, params_extract=None):
 
     m_size = 3
     n_size = 70
-    n_filters = 4
+    n_filters = 1
     maxpool_const = 4
 
     x = Conv2D(n_filters, (m_size, n_size),
@@ -185,7 +185,7 @@ def build_model_tf_basic(params_learn=None, params_extract=None):
                       kernel_regularizer=l2(1e-5),
                       data_format='channels_first')(melgram_input)
 
-    x = BatchNormalization(axis=channel_axis)(x)
+    # x = BatchNormalization(axis=channel_axis)(x)
     x = ELU()(x)
     x = MaxPooling2D(pool_size=(int(params_extract.get('patch_len')//maxpool_const), params_extract.get('n_mels')), data_format="channels_first")(x)
     x = Flatten()(x)
