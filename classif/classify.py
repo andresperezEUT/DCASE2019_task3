@@ -285,9 +285,10 @@ if params_ctrl.get('feat_ext'):
 
         else:
             print('Dev set is already extracted in {}'.format(params_path.get('featurepath_dev')))
-        # save dict with event durations
-        path_pics = utils_classif.make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
-        pickle.dump(var_lens, open(path_pics + '/event_durations.pickle'), 'wb')
+
+        # save dict with event durations, algo cambie aqui y lie los paths
+        # path_pics = utils_classif.make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
+        # pickle.dump(var_lens, open(path_pics + '/event_durations.pickle'), 'wb')
 
         # todo when eval set is available******************
         # if not os.path.exists(params_path.get('featurepath_te')):
