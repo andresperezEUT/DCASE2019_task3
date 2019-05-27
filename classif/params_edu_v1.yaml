@@ -26,16 +26,16 @@ extract:
   n_mels: 128
   normalize_audio: true
   normalize_mel_bands: false
-#  patch_hop: 12  # 12 frames means 250 ms that we slide the patches
-#  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
-  patch_hop: 50  # debug with minimum patches
-  patch_len: 50  #
+  patch_hop: 12  # 12 frames means 250 ms that we slide the patches
+  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
+#  patch_hop: 50  # debug with minimum patches
+#  patch_len: 50  #
   snip_hop: 24000
   snip_len: 48000
   spectrogram_type: power
   win_length_samples: 1920
   window: hamming_asymmetric
-  mode_last_patch: fill # dica
+  mode_last_patch: discard     # discard
 learn:
   alpha_mobilenet: 0.5
   LSR: false

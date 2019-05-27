@@ -444,6 +444,7 @@ class DataGeneratorPatch(Sequence):
         self.patch_hop = int(params_extract.get('patch_hop'))
         self.n_classes = int(params_learn.get('n_classes'))
         self.val_mode = False
+        self.mode_last_patch = params_extract.get('mode_last_patch')
 
         # LSR
         self.LSR = params_learn.get('LSR')
@@ -506,14 +507,19 @@ class DataGeneratorPatch(Sequence):
         # on_epoch_end is triggered at init, and then at the end of each epoch to get new exploration order.
         # Shuffling order in which examples are fed, increases variability seen, hence robustness
 
-
     def get_num_instances_per_file(self, f_name):
         """
         Return the number of context_windows, patches, or instances generated out of a given file
         """
         shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         file_frames = float(shape[0])
-        return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
+        if self.mode_last_patch == 'discard':
+            # the last patch that is always incomplete is discarded
+            return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
+        elif self.mode_last_patch == 'fill':
+            # the last patch that is always incomplete will be filled with zeros or signal, to avoid discarding signal
+            # hence we count one more patch
+            return np.maximum(1, 1 + int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
 
     def get_feature_size_per_file(self, f_name):
         """
@@ -582,6 +588,7 @@ class DataGeneratorPatch(Sequence):
                                                        self.file_list[f_id].replace(self.suffix_in, self.suffix_out)))
 
         # indexes to store patches in self.features, according to the nb of instances from the file
+        # (previously defined in get_num_instances_per_file)
         idx_start = self.nb_inst_cum[f_id]      # start for a given file
         idx_end = self.nb_inst_cum[f_id + 1]    # end for a given file
 
@@ -590,7 +597,19 @@ class DataGeneratorPatch(Sequence):
         idx = 0  # to index the different patches of f_id within self.features
         start = 0  # starting frame within f_id for each T-F patch
         while idx < (idx_end - idx_start):
-            self.features[idx_start + idx] = mel_spec[start: start + self.patch_len]
+
+            if idx == (idx_end - idx_start) - 1 and self.mode_last_patch == 'fill':
+                # last patch and want to fill the incomplete patch
+                tmp = mel_spec[start: start + self.patch_len]
+                # I could leave it like this, since the rest are zeros, but since I'm going to scale the features,
+                # artificial values are not cool. So I fill it with the begining of the TF representation (circular shift)
+                tmp.append(mel_spec[0: self.patch_len - tmp.shape[0]])
+                self.features[idx_start + idx] = tmp
+
+            else:
+                # rest of the cases
+                self.features[idx_start + idx] = mel_spec[start: start + self.patch_len]
+
             # update indexes
             start += self.patch_hop
             idx += 1

@@ -16,6 +16,8 @@ Then, the main script loads all the params from yaml and runs the experiment
 # ---------
 start = time.time()
 
+output_file = 'debug_trial'
+
 # nb of trials in the experiment
 N = 3
 
@@ -23,7 +25,7 @@ N = 3
 lrs = [0.001, 0.0001]
 # patch_lens = [25, 50, 75, 100]
 patch_lens = [25, 50]
-output_file = 'js_tidy_patch_len2550'
+# output_file = 'js_tidy_patch_len2550'
 models = ['js_tidy']
 
 # output_file = 'vgg_md_patch_len2550'
