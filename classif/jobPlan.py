@@ -16,20 +16,24 @@ Then, the main script loads all the params from yaml and runs the experiment
 # ---------
 start = time.time()
 
-output_file = 'debug_trial'
+# output_file = 'debug_trial'
 
 # nb of trials in the experiment
-N = 3
+N = 5
 
 # params to try************************************
+# basic params
 lrs = [0.001, 0.0001]
-# patch_lens = [25, 50, 75, 100]
 patch_lens = [25, 50]
+batch_sizes = [64, 100]
+mode_last_patches = ['discard', 'fill']
+
 # output_file = 'js_tidy_patch_len2550'
-models = ['js_tidy']
+# models = ['js_tidy']
 
 # output_file = 'vgg_md_patch_len2550'
-# models = ['vgg_md']
+output_file = 'vgg_md_basic_external_params'
+models = ['vgg_md']
 
 # output_file = 'crnn_patch_len2550'
 # models = ['crnn']
@@ -59,7 +63,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, mode_last_patch):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -83,7 +87,9 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr):
 
     # watch basic
     data['learn']['lr'] = lr
+    data['learn']['batch_size'] = batch_size
     data['extract']['patch_len'] = patch_len
+    data['extract']['mode_last_patch'] = mode_last_patch
 
     # watch LSR
     data['learn']['LSR'] = False
@@ -128,30 +134,34 @@ def main():
                 # for q_loss in q_losses:
                 for lr in lrs:
                     for patch_len in patch_lens:
-                        count_trial += 1
+                        for batch_size in batch_sizes:
+                            for mode_last_patch in mode_last_patches:
+                                count_trial += 1
 
-                        change_yaml(yaml_file,
-                                    count_trial=count_trial,
-                                    output_file=output_file,
-                                    model=model,
-                                    loss=loss,
-                                    patch_len=patch_len,
-                                    lr=lr
-                                    )
+                                change_yaml(yaml_file,
+                                            count_trial=count_trial,
+                                            output_file=output_file,
+                                            model=model,
+                                            loss=loss,
+                                            patch_len=patch_len,
+                                            lr=lr,
+                                            batch_size=batch_size,
+                                            mode_last_patch=mode_last_patch
+                                            )
 
-                        # call the job
-                        str_exec = 'python classify.py -p ' + yaml_file
-                        print(str_exec)
-                        # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
+                                # call the job
+                                str_exec = 'python classify.py -p ' + yaml_file
+                                print(str_exec)
+                                # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
 
-                        try:
-                            retcode = subprocess.call(str_exec, shell=True)
-                            if retcode < 0:
-                                print("Child was terminated by signal", -retcode, file=sys.stderr)
-                            else:
-                                print("Child returned", retcode, file=sys.stderr)
-                        except OSError as e:
-                            print("Execution failed:", e, file=sys.stderr)
+                                try:
+                                    retcode = subprocess.call(str_exec, shell=True)
+                                    if retcode < 0:
+                                        print("Child was terminated by signal", -retcode, file=sys.stderr)
+                                    else:
+                                        print("Child returned", retcode, file=sys.stderr)
+                                except OSError as e:
+                                    print("Execution failed:", e, file=sys.stderr)
 
     end = time.time()
 

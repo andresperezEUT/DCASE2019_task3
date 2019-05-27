@@ -26,8 +26,8 @@ extract:
   n_mels: 128
   normalize_audio: true
   normalize_mel_bands: false
-  patch_hop: 12  # 12 frames means 250 ms that we slide the patches
-  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
+  patch_hop: 13  # 13 frames means 250 ms that we slide the patches
+  patch_len: 50  # 50 frames with hopsize of 20ms means patches of 1 second
 #  patch_hop: 50  # debug with minimum patches
 #  patch_len: 50  #
   snip_hop: 24000

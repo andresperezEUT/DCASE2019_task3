@@ -515,11 +515,20 @@ class DataGeneratorPatch(Sequence):
         file_frames = float(shape[0])
         if self.mode_last_patch == 'discard':
             # the last patch that is always incomplete is discarded
-            return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
+            if self.patch_len == 25 and self.patch_hop == 13 and file_frames == 51:
+                num_instances_per_file = 3
+            else:
+                num_instances_per_file = np.maximum(1, int(np.ceil((file_frames - self.patch_len - 1) / self.patch_hop)))
+
         elif self.mode_last_patch == 'fill':
             # the last patch that is always incomplete will be filled with zeros or signal, to avoid discarding signal
             # hence we count one more patch
-            return np.maximum(1, 1 + int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
+            if self.patch_len == 25 and self.patch_hop == 13 and file_frames == 51:
+                num_instances_per_file = 3
+            else:
+                num_instances_per_file = np.maximum(1, 1 + int(np.ceil((file_frames - self.patch_len - 1) / self.patch_hop)))
+
+        return num_instances_per_file
 
     def get_feature_size_per_file(self, f_name):
         """
@@ -601,9 +610,13 @@ class DataGeneratorPatch(Sequence):
             if idx == (idx_end - idx_start) - 1 and self.mode_last_patch == 'fill':
                 # last patch and want to fill the incomplete patch
                 tmp = mel_spec[start: start + self.patch_len]
-                # I could leave it like this, since the rest are zeros, but since I'm going to scale the features,
-                # artificial values are not cool. So I fill it with the begining of the TF representation (circular shift)
-                tmp.append(mel_spec[0: self.patch_len - tmp.shape[0]])
+                # I could leave it like this, since the rest are initialized to zeros,
+                # but since I'm going to scale the features, artificial values are not cool.
+                # So I fill it with the begining of the TF representation (circular shift)
+                # watch: if the clip has 51 frames (extended to 1 second), in get_num_instances_per_file we allocated one patch
+                # hence the 50 first frames is the last patch, so we get here, but tmp at this point has 50x128
+                # so next line does nothing
+                tmp = np.vstack((tmp, mel_spec[0: self.patch_len - tmp.shape[0]]))
                 self.features[idx_start + idx] = tmp
 
             else:
