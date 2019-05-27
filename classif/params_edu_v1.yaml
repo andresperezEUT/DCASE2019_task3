@@ -27,7 +27,7 @@ extract:
   normalize_audio: true
   normalize_mel_bands: false
   patch_hop: 12  # 12 frames means 250 ms that we slide the patches
-  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 second
+  patch_len: 25  # 50 frames with hopsize of 20ms means patches of 1 secon
   snip_hop: 24000
   snip_len: 48000
   spectrogram_type: power
