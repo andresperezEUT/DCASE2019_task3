@@ -1,7 +1,7 @@
 
 import numpy as np
 import os
-import utils
+import utils_classif
 from numpy.random import permutation
 from sklearn.preprocessing import StandardScaler
 from keras.utils import Sequence, to_categorical
@@ -400,7 +400,7 @@ def get_label_files(filelist=None, dire=None, suffix_in=None, suffix_out=None):
     labels = np.zeros((nb_files_total, 1), dtype=np.float32)
     for f_id in range(nb_files_total):
         # load file containing the label and store in the ndarray
-        labels[f_id] = utils.load_tensor(in_path=os.path.join(dire, filelist[f_id].replace(suffix_in, suffix_out)))
+        labels[f_id] = utils_classif.load_tensor(in_path=os.path.join(dire, filelist[f_id].replace(suffix_in, suffix_out)))
     return labels
 
 
@@ -511,7 +511,7 @@ class DataGeneratorPatch(Sequence):
         """
         Return the number of context_windows, patches, or instances generated out of a given file
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         file_frames = float(shape[0])
         return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
 
@@ -520,7 +520,7 @@ class DataGeneratorPatch(Sequence):
         Return the dimensionality of the features in a given file.
         Typically, this will be the number of bins in a T-F representation
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         return shape[1]
 
     def get_patches_features_labels(self, feature_dir, file_list):
@@ -577,8 +577,8 @@ class DataGeneratorPatch(Sequence):
         # for a file specified by id,
         # perform slicing into T-F patches, and store them in tensor self.features
 
-        mel_spec = utils.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
-        label = utils.load_tensor(in_path=os.path.join(self.feature_dir,
+        mel_spec = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
+        label = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir,
                                                        self.file_list[f_id].replace(self.suffix_in, self.suffix_out)))
 
         # indexes to store patches in self.features, according to the nb of instances from the file
@@ -717,7 +717,7 @@ class PatchGeneratorPerFile(object):
         """
         Return the number of context_windows or instances generated out of a given file
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         file_frames = float(shape[0])
         return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
 
@@ -726,7 +726,7 @@ class PatchGeneratorPerFile(object):
         Return the dimensionality of the features in a given file.
         Typically, this will be the number of bins in a T-F representation
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         return shape[1]
 
     def get_patches_features(self, feature_dir, file_list):
@@ -771,7 +771,7 @@ class PatchGeneratorPerFile(object):
     def fetch_file_2_tensor(self, f_id):
         # for a file specified by id,
         # perform slicing into T-F patches, and store them in tensor self.features
-        mel_spec = utils.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
+        mel_spec = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
 
         # indexes to store patches in self.features, according to the nb of instances from the file
         idx_start = self.nb_inst_cum[f_id]  # start for a given file
@@ -897,7 +897,7 @@ class DataGeneratorPatchOrigin(Sequence):
         """
         Return the number of context_windows, patches, or instances generated out of a given file
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         file_frames = float(shape[0])
         return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
 
@@ -906,7 +906,7 @@ class DataGeneratorPatchOrigin(Sequence):
         Return the dimensionality of the features in a given file.
         Typically, this will be the number of bins in a T-F representation
         """
-        shape = utils.get_shape(os.path.join(f_name.replace('.data', '.shape')))
+        shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         return shape[1]
 
     def get_patches_features_labels(self, feature_dir, file_list):
@@ -966,8 +966,8 @@ class DataGeneratorPatchOrigin(Sequence):
         # for a file specified by id,
         # perform slicing into T-F patches, and store them in tensor self.features
 
-        mel_spec = utils.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
-        label = utils.load_tensor(in_path=os.path.join(self.feature_dir,
+        mel_spec = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
+        label = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir,
                                                        self.file_list[f_id].replace(self.suffix_in, self.suffix_out)))
 
         # indexes to store patches in self.features, according to the nb of instances from the file

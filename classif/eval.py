@@ -29,9 +29,7 @@ class Evaluator (object):
         self.gt = gt
         self.predictions = predictions
         self.list_labels = list_labels
-        self.train_data = params_ctrl['train_data']
         self.path_results = params_files['results']
-        self.count_trial = params_ctrl['count_trial']
 
         if not os.path.isfile(params_files['results']):
             # create empty dict for results and dump pickle
@@ -151,8 +149,7 @@ class Evaluator (object):
         :param predictions:
         :return:
         """
-        print('\n=====Evaluating ACCURACY - MICRO on the {0} subset of the training set============================='.
-              format(self.train_data))
+        print('\n=====Evaluating ACCURACY - MICRO =============================')
         acc = {}
         for index, row in self.predictions.iterrows():
             pred_per_file = row['label']
