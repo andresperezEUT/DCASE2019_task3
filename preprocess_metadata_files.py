@@ -72,22 +72,24 @@ for audio_file_name in os.listdir(data_folder_path):
                     # plt.grid()
 
                     # sf.write('/Users/andres.perez/Desktop/sources/'+sound_class_string+str(start_frame)+'.wav',sound_event_mono,sr)
-                    sf.write('data/mono_dev/' + sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '.wav', sound_event_mono, sr)
+                    # filename = sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '.wav'
+                    filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                    sf.write('data/mono_data/wav/dev/' + filename, sound_event_mono, sr)
 
                     # create csv with split info for development
-                    files.append(sound_class_string+str(start_frame)+'.wav')
+                    files.append(filename)
                     labels.append(sound_class_string)
                     splits.append(int(metadata_file_name.split('_')[0][-1]))
                     irs.append(int(metadata_file_name.split('_')[1][-1]))
                     parents.append(metadata_file_name)
 
 
-gt_classif = pd.DataFrame(files, columns=["file"])
+gt_classif = pd.DataFrame(files, columns=['fname'])
 gt_classif['label'] = labels
 gt_classif['split'] = splits
 gt_classif['ir'] = irs
 gt_classif['parent'] = parents
-gt_classif.to_csv('gt_classif.csv', index=False)
+gt_classif.to_csv('gt_dev.csv', index=False)
 print('EOF')
 # plt.show()
 
