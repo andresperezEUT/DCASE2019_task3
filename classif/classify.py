@@ -154,7 +154,7 @@ path_predictions = utils_classif.make_sure_isdir('predictions', params_ctrl.get(
 params_files['predictions'] = os.path.join(path_predictions, params_ctrl.get('output_file') + '_v' + str(params_ctrl.get('count_trial')) + '.csv')
 path_results = utils_classif.make_sure_isdir('logs/results', params_ctrl.get('output_file'))
 params_files['results'] = os.path.join(path_results, params_ctrl.get('output_file') + '.pickle')
-params_files['event_durations'] = os.path.join('logs/pics', params_ctrl.get('output_file') + '_event_durations.pickle')
+# params_files['event_durations'] = os.path.join('logs/pics', params_ctrl.get('output_file') + '_event_durations.pickle')
 
 # # ============================================= print all params to keep record in output file
 print('\nparams_ctrl=')
@@ -286,7 +286,8 @@ if params_ctrl.get('feat_ext'):
         else:
             print('Dev set is already extracted in {}'.format(params_path.get('featurepath_dev')))
         # save dict with event durations
-        pickle.dump(var_lens, open(params_files['event_durations'], 'wb'))
+        path_pics = utils_classif.make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
+        pickle.dump(var_lens, open(path_pics + 'event_durations.pickle'), 'wb')
 
         # todo when eval set is available******************
         # if not os.path.exists(params_path.get('featurepath_te')):
@@ -507,6 +508,7 @@ for kfo in range(1, 2):
             model = get_mobilenet_ka19(params_learn=params_learn, params_extract=params_extract)
 
         elif params_learn.get('model') == 'mobileKERAS':
+            # this one is the original
             model = mobilenet(alpha=params_learn.get('alpha_mobilenet'),
                               depth_multiplier=1,
                               dropout=0.5,
