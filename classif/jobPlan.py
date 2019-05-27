@@ -23,17 +23,17 @@ N = 3
 lrs = [0.001, 0.0001]
 # patch_lens = [25, 50, 75, 100]
 patch_lens = [25, 50]
-# output_file = 'js_tidy_patch_len255075100'
+# output_file = 'js_tidy_patch_len2550'
 # models = ['js_tidy']
 
-output_file = 'vgg_md_patch_len255075100'
+output_file = 'vgg_md_patch_len2550'
 models = ['vgg_md']
 
-# output_file = 'crnn_patch_len255075100'
+# output_file = 'crnn_patch_len2550'
 # models = ['crnn']
 
 # patch_lens = [35, 50, 75, 100]
-# output_file = 'mobilenet_patch_len355075100'
+# output_file = 'mobilenet_patch_len3550'
 # models = ['mobileKERAS']
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
