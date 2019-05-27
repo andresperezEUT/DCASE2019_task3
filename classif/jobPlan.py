@@ -26,11 +26,11 @@ patch_lens = [25, 50]
 # output_file = 'js_tidy_patch_len2550'
 # models = ['js_tidy']
 
-output_file = 'vgg_md_patch_len2550'
-models = ['vgg_md']
+# output_file = 'vgg_md_patch_len2550'
+# models = ['vgg_md']
 
-# output_file = 'crnn_patch_len2550'
-# models = ['crnn']
+output_file = 'crnn_patch_len2550'
+models = ['crnn']
 
 # patch_lens = [35, 50, 75, 100]
 # output_file = 'mobilenet_patch_len3550'
