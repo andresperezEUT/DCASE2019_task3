@@ -682,6 +682,94 @@ def get_model_crnn_sa(params_crnn=None, params_learn=None, params_extract=None):
     return _model
 
 
+def get_model_crnn_seld(params_crnn=None, params_learn=None, params_extract=None):
+    # def get_model_crnn_seld(data_in, data_out, dropout_rate, nb_cnn2d_filt, pool_size,
+    #                                 rnn_size, fnn_size, weights):
+
+    K.set_image_data_format('channels_first')
+
+    n_class = params_learn.get('n_classes')
+
+    input_shape = (1, params_extract.get('patch_len'), params_extract.get('n_mels'))
+
+    # make sure to understand this, channel_ok, time_ok, freq_ok. Does not include the batch axis.
+    # spec_start = Input(shape=(data_in.shape[-3], data_in.shape[-2], data_in.shape[-1]))
+    spec_start = Input(shape=input_shape)
+    spec_cnn = spec_start
+
+    # CNN
+    for i, convCnt in enumerate(params_crnn.get('cnn_pool_size')):
+        spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=(3, 3), padding='same')(spec_cnn)
+        # after a Conv2D layer with data_format="channels_first", set axis=1
+        spec_x = BatchNormalization(axis=1)(spec_cnn)
+        spec_cnn = Activation('relu')(spec_cnn)
+        spec_cnn = MaxPooling2D(pool_size=(1, params_crnn.get('cnn_pool_size')[i]))(spec_cnn)
+        spec_cnn = Dropout(params_crnn.get('dropout_rate'))(spec_cnn)
+    spec_cnn = Permute((2, 1, 3))(spec_cnn)  # model definition
+
+    # seems here we have dimension:
+    # channel (nb of filters), time (untouched, cause there was no pooling), freq (reduced by MP, by 20 times), hence 6 in freq
+
+    # here we have 3 conv layers, now let's plug the rec layers:
+
+    # Permutes the dimensions of the input according to a given pattern to (time, channel, freq)
+    # Useful for e.g. connecting RNNs and convnets together.
+
+    # RNN
+    # target_shape: Tuple of integers. Does not include the batch axis.
+    # Output shape: (batch_size,) + target_shape
+    # target_shape is (the original time dimension, whatever needed to match the dimensions)
+    # the latter means concatenate the different activation maps to go:
+    # -from a tensor of depth 128 activation maps of time,freq
+    # -to a matrix of (time, 128*freq)
+    # spec_x = Reshape((data_in.shape[-2], -1))(spec_x)
+
+    spec_rnn = Reshape((params_extract.get('patch_len'), -1))(spec_cnn)
+    for nb_rnn_filt in params_crnn.get('rnn_nb'):
+        spec_rnn = Bidirectional(
+            GRU(nb_rnn_filt, activation='tanh', dropout=params_crnn.get('dropout_rate'), recurrent_dropout=params_crnn.get('dropout_rate'),
+                return_sequences=True),
+            merge_mode='mul'
+        )(spec_rnn)
+
+    # dims here:
+    # -time dim is preserved, untouched
+    # -the other dim, 'freq', is 32 due to 32 nodes of the GRU, _r
+
+    # FC - SED
+    sed = spec_rnn
+    for nb_fnn_filt in params_crnn.get('fc_nb'):
+        sed = TimeDistributed(Dense(nb_fnn_filt))(sed)
+        sed = Dropout(params_crnn.get('dropout_rate'))(sed)
+
+    # apply a dense layer to every time frame, mapping it to the number of classes to predict
+    # hence we predict class activity on per-frame basis
+    # sigmoid for multilabel (will need thresholding in post-pro)
+
+    # originally, we predicted multiple labels for every time slice, hence we can do SED.
+    # this is useful for the case where we want to:
+    # -determine class activity with timestamps with certain time resolution (hence TimeDistributed)
+    # -several classes can overlap (ie multilabel, hence sigmoid & binary_crossentropy)
+    # -several classes can occur in the same clip
+    # now, the problem is different:
+    # -no need for timestamps (hence paso de TimeDistributed)
+    # OLD from kaggle18: - no concurrent classes, and only one can occur per file (ie multiclass, hence softmax & categorical_crossentropy)
+
+    # original
+    # sed = TimeDistributed(Dense(data_out[0][-1]))(sed)
+    # sed = Activation('sigmoid', name='sed_out')(sed)
+
+    # we have 2D, need flatten
+    # before FC
+    spec_x = Flatten()(sed)
+
+    spec_x = Dense(n_class)(spec_x)
+    out = Activation('softmax')(spec_x)
+
+    _model = Model(inputs=spec_start, outputs=out)
+    return _model
+
+
 def get_model_vgg_md(params_learn=None, params_extract=None):
     """
 

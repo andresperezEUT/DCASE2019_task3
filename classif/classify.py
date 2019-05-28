@@ -32,7 +32,7 @@ from feat_ext import load_audio_file, get_mel_spectrogram, modify_file_variable_
 from data import get_label_files, DataGeneratorPatch, PatchGeneratorPerFile
 from architectures import build_model_tf_basic, get_model_tf_js, \
     get_model_crnn_sa, get_model_tf_js_tidy, get_model_vgg_md, get_model_cochlear_18, get_model_tf_kong_cnnbase18, \
-    get_mobilenet_ka19
+    get_mobilenet_ka19, get_model_crnn_seld
 from eval import Evaluator
 from losses import crossentropy_cochlear, crossentropy_diy_max, lq_loss, lq_loss_wrap, crossentropy_diy_max_wrap, \
     crossentropy_diy_outlier_wrap, crossentropy_reed_wrap, crossentropy_diy_outlier_origin_wrap
@@ -113,8 +113,10 @@ elif params_ctrl.get('execute') == 'cpu':
     print('path_root_data taken from yaml')
 
 params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
-               'featuredir_dev': 'audio_dev_varup1/',
-               'featuredir_eval': 'audio_eval_varup1/',
+               # 'featuredir_dev': 'audio_dev_varup1/',
+               # 'featuredir_eval': 'audio_eval_varup1/',
+               'featuredir_dev': 'audio_dev_varup2_64mel/',
+               'featuredir_eval': 'audio_eval_varup2_64mel/',
                'path_to_dataset': path_root_data,
                'audiodir_dev': 'wav/dev/',
                'audiodir_eval': 'wav/eval/',
@@ -498,6 +500,9 @@ for kfo in range(1, 5):
 
             model = get_model_crnn_sa(params_crnn=params_crnn, params_learn=params_learn,
                                       params_extract=params_extract)
+
+        elif params_learn.get('model') == 'crnn_seld':
+            model = get_model_crnn_seld(params_learn=params_learn, params_extract=params_extract)
 
         elif params_learn.get('model') == 'vgg_md':
             model = get_model_vgg_md(params_learn=params_learn, params_extract=params_extract)

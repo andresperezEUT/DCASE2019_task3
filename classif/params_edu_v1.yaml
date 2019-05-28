@@ -9,7 +9,7 @@ ctrl:
   pipeline: T_F
   plot_figs: false
 extract:
-  audio_len_s: 1
+  audio_len_s: 2
   diff: false
   eps: 2.220446049250313e-16
   fmax: 18000
@@ -23,7 +23,7 @@ extract:
   method: mel
   mono: true
   n_fft: 2048
-  n_mels: 128
+  n_mels: 64
   normalize_audio: true
   normalize_mel_bands: false
   patch_hop: 13  # 13 frames means 250 ms that we slide the patches
