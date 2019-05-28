@@ -725,22 +725,24 @@ def get_model_crnn_seld(params_crnn=None, params_learn=None, params_extract=None
     # spec_x = Reshape((data_in.shape[-2], -1))(spec_x)
 
     spec_rnn = Reshape((params_extract.get('patch_len'), -1))(spec_cnn)
-    for nb_rnn_filt in params_crnn.get('rnn_nb'):
-        spec_rnn = Bidirectional(
-            GRU(nb_rnn_filt, activation='tanh', dropout=params_crnn.get('dropout_rate'), recurrent_dropout=params_crnn.get('dropout_rate'),
-                return_sequences=True),
-            merge_mode='mul'
-        )(spec_rnn)
+    # for nb_rnn_filt in params_crnn.get('rnn_nb'):
+    nb_rnn_filt = params_crnn.get('rnn_nb')
+    spec_rnn = Bidirectional(
+        GRU(nb_rnn_filt, activation='tanh', dropout=params_crnn.get('dropout_rate'), recurrent_dropout=params_crnn.get('dropout_rate'),
+            return_sequences=True),
+        merge_mode='mul'
+    )(spec_rnn)
 
     # dims here:
     # -time dim is preserved, untouched
     # -the other dim, 'freq', is 32 due to 32 nodes of the GRU, _r
 
-    # FC - SED
+    # FC - SED, todo esto se podria variar
     sed = spec_rnn
-    for nb_fnn_filt in params_crnn.get('fc_nb'):
-        sed = TimeDistributed(Dense(nb_fnn_filt))(sed)
-        sed = Dropout(params_crnn.get('dropout_rate'))(sed)
+    # for nb_fnn_filt in params_crnn.get('fc_nb'):
+    nb_fnn_filt = params_crnn.get('fc_nb')
+    sed = TimeDistributed(Dense(nb_fnn_filt))(sed)
+    sed = Dropout(params_crnn.get('dropout_rate'))(sed)
 
     # apply a dense layer to every time frame, mapping it to the number of classes to predict
     # hence we predict class activity on per-frame basis
