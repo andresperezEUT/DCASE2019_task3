@@ -502,7 +502,8 @@ for kfo in range(1, 5):
                                       params_extract=params_extract)
 
         elif params_learn.get('model') == 'crnn_seld':
-            model = get_model_crnn_seld(params_learn=params_learn, params_extract=params_extract)
+            model = get_model_crnn_seld(params_crnn=params_crnn, params_learn=params_learn,
+                                        params_extract=params_extract)
 
         elif params_learn.get('model') == 'vgg_md':
             model = get_model_vgg_md(params_learn=params_learn, params_extract=params_extract)
