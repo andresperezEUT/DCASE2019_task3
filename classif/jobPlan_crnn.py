@@ -31,11 +31,12 @@ batch_sizes = [100]
 cnn_nb_filts = [64, 128]
 rnn_nbs = [32, 64, 128]
 fc_nbs = [16, 32, 64]
-dropout_rate = 0.0
-# dropout_rate = 0.5
+# dropout_rate = 0.0
+dropout_rate = 0.5
 
 
-output_file = 'crnn_seld_explore_net_params_NOdropout'
+# output_file = 'crnn_seld_explore_net_params_NOdropout'
+output_file = 'crnn_seld_explore_net_params_YESdropout'
 models = ['crnn_seld']
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin

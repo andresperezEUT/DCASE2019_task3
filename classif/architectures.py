@@ -762,7 +762,7 @@ def get_model_crnn_seld(params_crnn=None, params_learn=None, params_extract=None
     # sed = Activation('sigmoid', name='sed_out')(sed)
 
     # we have 2D, need flatten
-    # before FC
+    # before FC, todo esto se podria variar
     spec_x = Flatten()(sed)
 
     spec_x = Dense(n_class)(spec_x)
