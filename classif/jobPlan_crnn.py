@@ -31,20 +31,20 @@ batch_sizes = [100]
 cnn_nb_filts = [64, 128]
 rnn_nbs = [32, 64, 128]
 fc_nbs = [16, 32, 64]
-# dropout_rate = 0.0
-# dropout_rate = 0.5
-dropout_rate = 0.3
-
+dropout_rate = 0.5  # this was found to be VERY important. Always include
+mode_last_patch = 'fill'
 
 # output_file = 'crnn_seld_explore_net_params_NOdropout'
 # output_file = 'crnn_seld_explore_net_params_YESdropout'
-output_file = 'crnn_seld_explore_net_params_03dropout'
+# output_file = 'crnn_seld_explore_net_params_03dropout'
+
+output_file = 'crnn_seld_explore_net_params_YESdropout_fill'
+
 models = ['crnn_seld']
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.5, 0.6]
-
 
 # vip define the path of the yaml with (most) of the parameters that define the experiment
 yaml_file = 'params_edu_v1.yaml'
@@ -76,6 +76,7 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['lr'] = lr
     data['learn']['batch_size'] = batch_size
     data['extract']['patch_len'] = patch_len
+    data['extract']['mode_last_patch'] = mode_last_patch
 
     # watch CRNN
     data['crnn']['cnn_nb_filt'] = cnn_nb_filt
