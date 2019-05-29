@@ -1,0 +1,104 @@
+ctrl:
+  count_trial: 1
+  dataset_path: ../data/mono_data/
+  execute: gpu_ds
+  feat_ext: true
+  learn: true
+  load_model: trained_models/out_eval/model_debug_toy.h5
+  output_file: debug_eval_trial
+  pipeline: T_F
+  plot_figs: false
+extract:
+  audio_len_s: 2
+  diff: false
+  eps: 2.220446049250313e-16
+  fmax: 18000
+  fmin: 20
+  fs: 48000
+  hop_length_samples: 960 # equals 20 ms at 48kHz
+  htk: false
+  load_mode: varup
+  log: true
+  mel_basis_unit: null
+  method: mel
+  mono: true
+  n_fft: 2048
+  n_mels: 64
+  normalize_audio: true
+  normalize_mel_bands: false
+  patch_hop: 13  # 13 frames means 250 ms that we slide the patches
+  patch_len: 50  # 50 frames with hopsize of 20ms means patches of 1 second
+#  patch_hop: 50  # debug with minimum patches
+#  patch_len: 50  #
+  snip_hop: 24000
+  snip_len: 48000
+  spectrogram_type: power
+  win_length_samples: 1920
+  window: hamming_asymmetric
+  mode_last_patch: discard     # discard
+learn:
+  alpha_mobilenet: 0.5
+  LSR: false
+  LSRmapping: linear
+  LSRmode: false
+  attention: false
+  batch_size: 64
+  delta_eps_LSR: false
+  delta_k_LSR: 0
+  distri_prior_LSR: false
+  dropout: true
+  dropout_prob: false
+  early_stop: val_acc
+  eps_LSR_clean: 0
+  eps_LSR_noisy: false
+  lr: 0.001
+  lr_schedule: true
+  mixup: false
+  mixup_alpha: 2
+  mixup_clamp: false
+  mixup_log: false
+  mixup_mode: intra
+  mixup_warmup_epochs: 5
+  mode_class_weight: false
+  model: debug
+  n_classes: 11
+  n_epochs: 100
+#  n_epochs: 1      # debug
+  optim: Adam
+  origin: useless
+  patience: 15
+  preactivation: 4
+  stage1_epoch: 25
+  stages: 1
+  val_method: random
+  val_split: 0.15
+loss:
+  k_loss: guay
+  l_loss: 2.7
+  l_loss2: pio
+  m_loss: 0.8
+  m_loss2: 0.95
+  q_loss: 0.5
+  q_loss2: 0.5
+  reed_beta: 0.2
+  reed_beta2: 0.5
+  reed_type: soft
+  transition: false
+  type: CCE
+  type2: false
+recognizer:
+  aggregate: gmean
+suffix:
+  in: _mel
+  out: _label
+crnn:
+  cnn_nb_filt: 128
+  cnn_pool_size: [5, 2, 2]
+  rnn_nb: [32]
+  fc_nb: [32]
+  dropout_rate: 0.5
+  # cnn_nb_filt = 128  # CNN filter size. originally 128, but in papers, from 8 to 128
+  # cnn_pool_size = [5, 2, 2]  # Maxpooling across frequency. Length of cnn_pool_size =  number of CNN layers
+  # rnn_nb = [32, 32]  # Number of RNN nodes.  Length of rnn_nb =  number of RNN layers
+  # fc_nb = [32]  # Number of FC nodes.  Length of fc_nb =  number of FC layers
+  # dropout_rate = 0.5  # Dropout after each lay
