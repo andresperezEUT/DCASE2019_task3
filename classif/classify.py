@@ -32,7 +32,7 @@ from feat_ext import load_audio_file, get_mel_spectrogram, modify_file_variable_
 from data import get_label_files, DataGeneratorPatch, PatchGeneratorPerFile
 from architectures import build_model_tf_basic, get_model_tf_js, \
     get_model_crnn_sa, get_model_tf_js_tidy, get_model_vgg_md, get_model_cochlear_18, get_model_tf_kong_cnnbase18, \
-    get_mobilenet_ka19, get_model_crnn_seld
+    get_mobilenet_ka19, get_model_crnn_seld, get_model_crnn_seld_tagger
 from eval import Evaluator
 from losses import crossentropy_cochlear, crossentropy_diy_max, lq_loss, lq_loss_wrap, crossentropy_diy_max_wrap, \
     crossentropy_diy_outlier_wrap, crossentropy_reed_wrap, crossentropy_diy_outlier_origin_wrap
@@ -507,6 +507,10 @@ for kfo in range(1, 5):
         elif params_learn.get('model') == 'crnn_seld':
             model = get_model_crnn_seld(params_crnn=params_crnn, params_learn=params_learn,
                                         params_extract=params_extract)
+
+        elif params_learn.get('model') == 'crnn_seld_tagger':
+            model = get_model_crnn_seld_tagger(params_crnn=params_crnn, params_learn=params_learn,
+                                               params_extract=params_extract)
 
         elif params_learn.get('model') == 'vgg_md':
             model = get_model_vgg_md(params_learn=params_learn, params_extract=params_extract)

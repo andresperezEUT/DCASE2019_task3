@@ -685,6 +685,16 @@ def get_model_crnn_sa(params_crnn=None, params_learn=None, params_extract=None):
 def get_model_crnn_seld(params_crnn=None, params_learn=None, params_extract=None):
     # def get_model_crnn_seld(data_in, data_out, dropout_rate, nb_cnn2d_filt, pool_size,
     #                                 rnn_size, fnn_size, weights):
+    """
+    this is the seld of
+    https://github.com/sharathadavanne/seld-dcase2019/blob/master/keras_model.py
+    but only with the SED branch
+
+    :param params_crnn:
+    :param params_learn:
+    :param params_extract:
+    :return:
+    """
 
     K.set_image_data_format('channels_first')
 
@@ -764,6 +774,67 @@ def get_model_crnn_seld(params_crnn=None, params_learn=None, params_extract=None
     spec_x = Flatten()(sed)
 
     spec_x = Dense(n_class)(spec_x)
+    out = Activation('softmax')(spec_x)
+
+    _model = Model(inputs=spec_start, outputs=out)
+    return _model
+
+
+def get_model_crnn_seld_tagger(params_crnn=None, params_learn=None, params_extract=None):
+    """
+    this is the seld of
+    https://github.com/sharathadavanne/seld-dcase2019/blob/master/keras_model.py
+    but only with the SED branch
+    and the end of the SED branch is inspired by a music tagger
+    https://github.com/keunwoochoi/music-auto_tagging-keras/blob/master/music_tagger_crnn.py
+
+
+    :param params_crnn:
+    :param params_learn:
+    :param params_extract:
+    :return:
+    """
+
+    K.set_image_data_format('channels_first')
+
+    n_class = params_learn.get('n_classes')
+
+    input_shape = (1, params_extract.get('patch_len'), params_extract.get('n_mels'))
+
+    # make sure to understand this, channel_ok, time_ok, freq_ok. Does not include the batch axis.
+    # spec_start = Input(shape=(data_in.shape[-3], data_in.shape[-2], data_in.shape[-1]))
+    spec_start = Input(shape=input_shape)
+    spec_cnn = spec_start
+
+    # CNN
+    for i, convCnt in enumerate(params_crnn.get('cnn_pool_size')):
+        spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=(3, 3), padding='same')(spec_cnn)
+        # after a Conv2D layer with data_format="channels_first", set axis=1
+        spec_x = BatchNormalization(axis=1)(spec_cnn)
+        spec_cnn = Activation('relu')(spec_cnn)
+        spec_cnn = MaxPooling2D(pool_size=(1, params_crnn.get('cnn_pool_size')[i]))(spec_cnn)
+        spec_cnn = Dropout(params_crnn.get('dropout_rate'))(spec_cnn)
+    spec_cnn = Permute((2, 1, 3))(spec_cnn)  # model definition
+
+    spec_rnn = Reshape((params_extract.get('patch_len'), -1))(spec_cnn)
+
+    for i, nb_rnn_filt in enumerate(params_crnn.get('rnn_nb')):
+        if len(params_crnn.get('rnn_nb')) == 1 or len(params_crnn.get('rnn_nb')) == 2 and i == 1:
+            spec_rnn = Bidirectional(
+                GRU(nb_rnn_filt, activation='tanh', dropout=params_crnn.get('dropout_rate'), recurrent_dropout=params_crnn.get('dropout_rate'),
+                    return_sequences=False), merge_mode='mul'
+            )(spec_rnn)
+
+        else:
+            spec_rnn = Bidirectional(
+                GRU(nb_rnn_filt, activation='tanh', dropout=params_crnn.get('dropout_rate'), recurrent_dropout=params_crnn.get('dropout_rate'),
+                    return_sequences=True), merge_mode='mul'
+            )(spec_rnn)
+
+    # note that the last GRU does not return_sequences=True. HEnce there is no need for TimeDistributed, nor Flatten
+    # much simpler
+    # todo meter algo de dropout? o quiza una dense normal (no TimeDistributed)?
+    spec_x = Dense(n_class)(spec_rnn)
     out = Activation('softmax')(spec_x)
 
     _model = Model(inputs=spec_start, outputs=out)
