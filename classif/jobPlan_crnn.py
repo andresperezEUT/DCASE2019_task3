@@ -22,26 +22,30 @@ start = time.time()
 N = 5
 
 # params to try************************************
-# basic params
+# basic params by default
 lrs = [0.0001]
-patch_lens = [25, 50, 75, 100]
 batch_sizes = [100]
-# mode_last_patches = ['discard', 'fill']
+mode_last_patch = 'discard'
 
+# explore the main params of the net, plus patch_len
+patch_lens = [25, 50, 75, 100]
 cnn_nb_filts = [64, 128]
 rnn_nbs = [32, 64, 128]
 fc_nbs = [16, 32, 64]
 dropout_rate = 0.5  # this was found to be VERY important. Always include
-mode_last_patch = 'fill'
 
 # output_file = 'crnn_seld_explore_net_params_NOdropout'
 # output_file = 'crnn_seld_explore_net_params_YESdropout'
 # output_file = 'crnn_seld_explore_net_params_03dropout'
 
-output_file = 'crnn_seld_explore_net_params_YESdropout_fill'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_fill'
+# mode_last_patch = 'fill'
+
+output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
+rnn_nbs = [[32, 32], [64, 64], [128, 128]]
+
 
 models = ['crnn_seld']
-
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.5, 0.6]
