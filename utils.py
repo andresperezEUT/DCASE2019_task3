@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 
 # TODO: reimplement it more fancy...
 def discard_nans(array):
-    new = []
-    for el in array:
-        if not np.isnan(el):
-            new.append(el)
-    return np.asarray(new)
+    # new = []
+    # for el in array:
+    #     if not np.isnan(el):
+    #         new.append(el)
+    # return np.asarray(new)
+    return array[~np.isnan(array)]
 
 def rad2deg(rad):
     return rad*360/(2*np.pi)
