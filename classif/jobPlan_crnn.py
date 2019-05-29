@@ -30,8 +30,8 @@ mode_last_patch = 'discard'
 # explore the main params of the net, plus patch_len
 patch_lens = [25, 50, 75, 100]
 cnn_nb_filts = [64, 128]
-rnn_nbs = [32, 64, 128]
-fc_nbs = [16, 32, 64]
+rnn_nbs = [[32], [64], [128]]
+fc_nbs = [[16], [32], [64]]
 dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 # output_file = 'crnn_seld_explore_net_params_NOdropout'
@@ -42,7 +42,8 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 # mode_last_patch = 'fill'
 
 output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
-rnn_nbs = [[32, 32], [64, 64], [128, 128]]
+rnn_nbs = [[32, 32], [64, 64], [128, 128]]      # this is the way to encode 2 layers
+# rnn_nbs = [[32], [64], [128]]      # this is the way to encode 1 layers. it must always be a list of things
 
 
 models = ['crnn_seld']
