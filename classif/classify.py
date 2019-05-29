@@ -171,6 +171,8 @@ print('params_loss=')
 pprint.pprint(params_loss, width=1, indent=4)
 print('params_recog=')
 pprint.pprint(params_recog, width=1, indent=4)
+print('params_crnn=')
+pprint.pprint(params_crnn, width=1, indent=4)
 print('\n')
 
 
@@ -240,7 +242,8 @@ if params_ctrl.get('feat_ext'):
                 shutil.rmtree(params_path.get('featurepath_dev'))
             os.makedirs(params_path.get('featurepath_dev'))
 
-            print('\nFeature extraction for dev set (prints enabled)..........................................')
+            print('\nFeature extraction for dev set (prints enabled). Features dumped in {}.........................'.
+                  format(params_path.get('featurepath_dev')))
             for idx, f_name in enumerate(filelist_audio_dev):
                 f_path = os.path.join(params_path.get('audiopath_dev'), f_name)
                 if os.path.isfile(f_path) and f_name.endswith('.wav'):
