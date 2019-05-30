@@ -50,6 +50,7 @@ output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2_refine_cnn128_rnn64
 cnn_nb_filts = [128]
 rnn_nbs = [[64, 64]]      # this is the way to encode 2 layers
 fc_nbs = [[32]]
+models = ['crnn_seld']
 
 
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
@@ -57,7 +58,6 @@ fc_nbs = [[32]]
 # # fc_nbs = None
 
 
-# models = ['crnn_seld']
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.5, 0.6]
