@@ -45,7 +45,8 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 # rnn_nbs = [[32, 32], [64, 64], [128, 128]]      # this is the way to encode 2 layers
 # rnn_nbs = [[32], [64], [128]]      # this is the way to encode 1 layers. it must always be a list of things
 # refine
-output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
+output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2_refine_cnn128_rnn64_fc32_check_patchLen'
 cnn_nb_filts = [128]
 rnn_nbs = [[64, 64]]      # this is the way to encode 2 layers
 fc_nbs = [[32]]
