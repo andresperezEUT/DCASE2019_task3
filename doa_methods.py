@@ -4,6 +4,7 @@ import numpy as np
 import csv
 import sys
 
+from file_utils import build_result_dict_from_metadata_array
 from seld_dcase2019_master.metrics.evaluation_metrics import distance_between_spherical_coordinates_rad
 
 pp = "/Users/andres.perez/source/parametric_spatial_audio_processing"
@@ -82,7 +83,7 @@ def fold_doa_into_results_vector(doa_th, sr, params, method='mean'):
 
     # result = [bin, class_id, azi, ele] with likely repeated bin instances
     result = []
-    class_id = 0  # whatever for the moment
+    class_id = params['default_class_id']
     for window_idx, window in enumerate(active_windows):
         num_bins = np.shape(position[window_idx])[1]
         for b in range(num_bins):
@@ -447,8 +448,8 @@ def group_sources_q_overlap(result_quantized, params):
         if len(value) == 3:
             azi = value[1]
             ele = value[2]
-            print('++++++')
-            print(frame, azi, ele)
+            # print('++++++')
+            # print(frame, azi, ele)
           # Compute distance with previous frame
             if not bool(event_dict): # Empty: append
                 event_dict[event_idx] = [[frame, azi, ele]]
@@ -465,7 +466,7 @@ def group_sources_q_overlap(result_quantized, params):
                                                                    deg2rad(azi),
                                                                    deg2rad(ele))
                     # print('distances', d, azi, ele, last_azi, last_ele)
-                    print (d, abs(frame - last_frame))
+                    # print (d, abs(frame - last_frame))
                     if d < d_th and abs(frame - last_frame) < frame_th:
                     # if d < d_th:
                         # Same event
@@ -474,7 +475,7 @@ def group_sources_q_overlap(result_quantized, params):
                         # print(event_dict)
                         break
                 if new_event:
-                    print('new event')
+                    # print('new event')
                     event_dict[event_idx] = [[frame, azi, ele]]
                     event_idx += 1
                     # print(event_dict)
@@ -484,8 +485,8 @@ def group_sources_q_overlap(result_quantized, params):
             for v in value:
                 azi = v[1]
                 ele = v[2]
-                print('++++++')
-                print(frame, azi, ele)
+                # print('++++++')
+                # print(frame, azi, ele)
                 # Compute distance with previous frame
                 if not bool(event_dict):  # Empty: append
                     event_dict[event_idx] = [[frame, azi, ele]]
@@ -502,7 +503,7 @@ def group_sources_q_overlap(result_quantized, params):
                                                                        deg2rad(azi),
                                                                        deg2rad(ele))
                         # print('distances', d, azi, ele, last_azi, last_ele)
-                        print (d, abs(frame - last_frame))
+                        # print (d, abs(frame - last_frame))
                         if d < d_th and abs(frame - last_frame) < frame_th:
                         # if d < d_th:
                             # Same event
@@ -511,7 +512,7 @@ def group_sources_q_overlap(result_quantized, params):
                             # print(event_dict)
                             break
                     if new_event:
-                        print('new event')
+                        # print('new event')
                         event_dict[event_idx] = [[frame, azi, ele]]
                         event_idx += 1
                         # print(event_dict)
@@ -519,6 +520,7 @@ def group_sources_q_overlap(result_quantized, params):
 
     # Build metadata result array
     metadata_result_array = []
+    class_id = params['default_class_id']
     hop_size = params['required_window_hop']  # s
     for event_idx, event_values in event_dict.iteritems():
         start_frame = event_values[0][0]
@@ -529,7 +531,7 @@ def group_sources_q_overlap(result_quantized, params):
         eles = np.asarray(event_values)[:,2]
         ele = np.median(eles)
 
-        metadata_result_array.append([None, start_frame * hop_size, end_frame * hop_size, ele, azi, None])
+        metadata_result_array.append([class_id, start_frame * hop_size, end_frame * hop_size, ele, azi, None])
 
 
     # num_frames = file_duration / hop_size
@@ -543,26 +545,11 @@ def group_sources_q_overlap(result_quantized, params):
     # TODO
     # # Re-build averaged dict
     # # Add all missing time windows and average values
-    result_dict = {}
-    class_idx = 0 # whatever
-    for event_values in metadata_result_array:
-        start_frame = int(np.floor(event_values[1]/hop_size))
-        end_frame = int(np.ceil(event_values[2]/hop_size))
-        ele = event_values[3]
-        azi = event_values[4]
-
-        for frame in range(start_frame, end_frame):
-            try:
-                # result_dict[frame].append([class_idx, azi, ele])
-                v = result_dict[frame]
-                result_dict[frame] = [v, [class_idx, azi, ele]]
-            except KeyError:
-                result_dict[frame] = [class_idx, azi, ele]
+    result_dict = build_result_dict_from_metadata_array(metadata_result_array, hop_size)
 
 
-
-    return metadata_result_array, result_averaged_dict
-    # return metadata_result_array, result_dict
+    # return metadata_result_array, result_averaged_dict
+    return metadata_result_array, result_dict
 
 
 ### TODO TODO TODO discriminate here also from angle

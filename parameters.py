@@ -18,12 +18,17 @@ def get_params(preset_string=None):
         metadata_result_folder_path='./results_metadata',
         metadata_result_file_extension='.csv',
 
+        # Name for after classification folders
+        before_classification_folder_name='doa',
+        after_classification_folder_name='classif',
+
         # DATASET LOADING PARAMETERS
         mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
         dataset='foa',      # 'foa' - ambisonic or 'mic' - microphone signals
 
         # MODEL PARAMETERS
         doa_method ='doa_method_mean',
+        default_class_id = -1,
         file_duration = 60, # in seconds
         window_size = 256,
         fmin = 125,
@@ -35,6 +40,8 @@ def get_params(preset_string=None):
         num_min_valid_bins = 10,
         required_window_hop = 0.02,
         kmeans_rate_th = 20,
+
+
         # PLOT
         plot = False,
 

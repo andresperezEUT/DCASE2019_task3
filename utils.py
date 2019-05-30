@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
-
+import random
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # SOME UTILS...
@@ -99,6 +99,16 @@ def beamforming(b_format, azi, ele, method='basic'):
     out = out / float(M)  # Don't forget to divide by the number of ambisonic channels!!!
 
     return out
+
+
+def dummy_classifier(sound_event_mono):
+    """
+    This is the random baseline classifier.
+    We will use of course a more sofisticated algorithm, but the input/output data types should remain the same
+    :param sound_event_mono: mono audio
+    :return: Integer between 0 and 10 with the class_id
+    """
+    return random.randint(0,10)
 
 
 

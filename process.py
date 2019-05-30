@@ -19,13 +19,27 @@ dataset_dir = params['dataset_dir']
 dataset_type_folder = params['dataset'] + "_" + params['mode']
 data_folder_path = os.path.join(dataset_dir, dataset_type_folder)
 
-# Check if result folders exist, and create them in turn
-output_result_folder_path = os.path.join(params['output_result_folder_path'], dataset_type_folder + "_" + preset)
+# Check if output result folders exist, and create them in turn
+output_result_folder_path = os.path.join(params['output_result_folder_path'],
+                                         dataset_type_folder + "_" + preset)
 if not os.path.exists(output_result_folder_path):
     os.mkdir(output_result_folder_path)
-metadata_result_folder_path = os.path.join(params['metadata_result_folder_path'], dataset_type_folder + "_" + preset)
+
+output_result_doa_folder_path = os.path.join(output_result_folder_path,
+                                            params['before_classification_folder_name'])
+if not os.path.exists(output_result_doa_folder_path):
+    os.mkdir(output_result_doa_folder_path)
+
+# Check if metadata result folders exist, and create them in turn
+metadata_result_folder_path = os.path.join(params['metadata_result_folder_path'],
+                                           dataset_type_folder + "_" + preset)
 if not os.path.exists(metadata_result_folder_path):
     os.mkdir(metadata_result_folder_path)
+
+metadata_result_doa_folder_path = os.path.join(metadata_result_folder_path,
+                                              params['before_classification_folder_name'])
+if not os.path.exists(metadata_result_doa_folder_path):
+    os.mkdir(metadata_result_doa_folder_path)
 
 print('                                              ')
 print('-------------- PROCESSING FILES --------------')
@@ -54,7 +68,7 @@ for audio_file in os.listdir(data_folder_path):
         # Write the localization results in the metadata format
         # TODO!
         metadata_result_file_name = os.path.splitext(audio_file)[0] + params['metadata_result_file_extension']
-        metadata_result_file_path = os.path.join(metadata_result_folder_path, metadata_result_file_name)
+        metadata_result_file_path = os.path.join(metadata_result_doa_folder_path, metadata_result_file_name)
         write_metadata_result_file(metadata_result_array, metadata_result_file_path)
 
         # -------------- SOURCE CLASSIFICATION --------------
@@ -67,7 +81,7 @@ for audio_file in os.listdir(data_folder_path):
         # TODO: PUT INSIDE PARAMETERS
         # ## WRITE FROM AVERAGED DICT
         output_result_file_name = os.path.splitext(audio_file)[0] + params['output_result_file_extension']
-        output_result_file_path = os.path.join(output_result_folder_path, output_result_file_name)
+        output_result_file_path = os.path.join(output_result_doa_folder_path, output_result_file_name)
         write_output_result_file(result_averaged_dict, output_result_file_path)
 
 print('-------------- PROCESSING FINISHED --------------')
@@ -78,13 +92,13 @@ print('                                                 ')
 print('-------------- COMPUTE DOA METRICS --------------')
 
 gt_folder = os.path.join(dataset_dir, 'metadata_'+params['mode'])
-compute_DOA_metrics(gt_folder, output_result_folder_path)
+compute_DOA_metrics(gt_folder, output_result_doa_folder_path)
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 print('-------------- VISUALIZE OUTPUT --------------')
 
-visualize_output(output_result_folder_path, gt_folder, data_folder_path, params)
+visualize_output(output_result_doa_folder_path, gt_folder, data_folder_path, params)
 
 
 # TODO
