@@ -10,8 +10,12 @@ def write_output_result_file(output_result_dict, path_to_write):
     :return:
     """
 
+    # Ensure ascending order
+    frames = output_result_dict.keys()
+    frames.sort()
+
     _fid = open(path_to_write, 'w')
-    for _frame_ind in output_result_dict.keys():
+    for _frame_ind in frames:
         _value = output_result_dict[_frame_ind]
         if len(_value) == 3:
             # this is only one point

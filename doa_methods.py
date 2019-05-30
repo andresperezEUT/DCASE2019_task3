@@ -3,6 +3,9 @@ import soundfile as sf
 import numpy as np
 import csv
 import sys
+
+from seld_dcase2019_master.metrics.evaluation_metrics import distance_between_spherical_coordinates_rad
+
 pp = "/Users/andres.perez/source/parametric_spatial_audio_processing"
 sys.path.append(pp)
 import parametric_spatial_audio_processing as psa
@@ -56,6 +59,7 @@ def fold_doa_into_results_vector(doa_th, sr, params, method='mean'):
         # with a key for each different frame_idx. It averages the content of result_quantized for one or two dict values per key.
     """
 
+    print('folding values...')
     N = doa_th.get_num_time_bins()
     K = doa_th.get_num_frequency_bins()
 
@@ -356,7 +360,7 @@ def group_sources_q(result_quantized, params):
 
 # Assumes overlapping, compute (1,2)-Kmeans on each segment
 def group_sources_q_overlap(result_quantized, params):
-
+    print('grouping sources...')
     result_averaged_dict = {}
 
     # TODO: MORE PYTHONIC
@@ -371,7 +375,7 @@ def group_sources_q_overlap(result_quantized, params):
     std_eles = []
     std_all = []
 
-    std_th = 10.
+    std_th = params['min_std_overlapping']
     label = 0
 
     for r_idx, row in enumerate(result_quantized):
@@ -384,16 +388,14 @@ def group_sources_q_overlap(result_quantized, params):
             azis.append(v[1])
             eles.append(v[2])
 
-
-
-        x = deg2rad(np.asarray([azis, eles]).T)
-        kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
-        kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
-        rate = kmeans1.inertia_ / kmeans2.inertia_
+        # x = deg2rad(np.asarray([azis, eles]).T)
+        # kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
+        # kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+        # rate = kmeans1.inertia_ / kmeans2.inertia_
 
         std_azis.append(scipy.stats.circstd(azis, high=180, low=-180))
         std_eles.append(np.std(eles))
-        std_all.append(std_azis[-1]/2 * std_eles[-1])
+        std_all.append(std_azis[-1]/2 + std_eles[-1])
 
         if std_all[-1] >= std_th:
             # 2 clusters:
@@ -405,67 +407,12 @@ def group_sources_q_overlap(result_quantized, params):
                 azi = rad2deg(c[0])
                 ele = rad2deg(c[1])
                 result_averaged_dict[frame].append([label, azi, ele])
-                print(result_averaged_dict[frame])
+                # print result_averaged_dict[frame]
         else:
             # 1 cluster: median
             azi = circmedian(np.asarray(azis), unit='deg')
             ele = np.median(eles)
             result_averaged_dict[frame] = [label, azi, ele]
-
-
-        #
-        # inertia1.append(kmeans1.inertia_/len(azis))
-        # inertia2.append(kmeans2.inertia_/len(azis))
-        #
-        # rates.append(rate)
-        # # print(frame, rate)
-        # # kmeans1.plot(x, "k1, frame: " + str(frame))
-        # # kmeans2.plot(x, "k2, frame: " + str(frame))
-        #
-        # if rate > params['kmeans_rate_th']:
-        #     cluster_centers = kmeans2.cluster_centers_
-        #     #
-        # else:
-        #     cluster_centers = kmeans1.cluster_centers_
-        #
-        #
-        # result_averaged_dict[frame] = []
-        #
-        # # One source
-        # if len(cluster_centers) == 1:
-        #     c = rad2deg(cluster_centers)
-        #     result_averaged_dict[frame] = c[0]
-        # # Two sources:
-        # else:
-        #     result_averaged_dict[frame] = []
-        #     for c in cluster_centers:
-        #         c = rad2deg(c)
-        #         result_averaged_dict[frame].append(c)
-
-    # h = params['required_window_hop']
-
-    # plt.figure()
-    # plt.suptitle('kmeans inertias')
-    # plt.scatter(np.asarray(frames)*h,inertia1,label='inertia1')
-    # plt.scatter(np.asarray(frames)*h,inertia2,label='inertia2')
-    # plt.legend()
-    # # plt.yscale('log')
-    # plt.grid()
-    # plt.show()
-    #
-    # plt.figure()
-    # plt.suptitle('diff')
-    # plt.scatter(np.asarray(frames)*h,np.asarray(inertia2) - np.asarray(inertia1),label='inertia1')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
-    #
-    # plt.figure()
-    # plt.suptitle('kmeans rates')
-    # plt.scatter(np.asarray(frames)*h,rates,label='rates')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
 
     plt.figure()
     plt.suptitle('kmeans stds')
@@ -479,7 +426,184 @@ def group_sources_q_overlap(result_quantized, params):
     plt.show()
 
     metadata_result_array = None
+
+    # Group stuff
+
+    # event_dict: each individual event is a key, and values is a list of [frame, azi, ele]
+
+    d_th = 10 # for example
+    frame_th = 20 # for example
+    event_idx = 0
+    event_dict = {}
+
+    # Ensure ascending order
+    frames = result_averaged_dict.keys()
+    frames.sort()
+
+    # for frame, value in result_averaged_dict.iteritems():
+    for frame in frames:
+        value = result_averaged_dict[frame]
+        # One source
+        if len(value) == 3:
+            azi = value[1]
+            ele = value[2]
+            print('++++++')
+            print(frame, azi, ele)
+          # Compute distance with previous frame
+            if not bool(event_dict): # Empty: append
+                event_dict[event_idx] = [[frame, azi, ele]]
+                # event_idx += 1
+                # print(event_dict)
+            else:
+                # Get all last values
+                new_event = True
+                for idx in range(event_idx):
+                    # print('check event '+str(idx))
+                    last_frame, last_azi, last_ele = event_dict[idx][-1]
+                    d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
+                                                                   deg2rad(last_ele),
+                                                                   deg2rad(azi),
+                                                                   deg2rad(ele))
+                    # print('distances', d, azi, ele, last_azi, last_ele)
+                    print (d, abs(frame - last_frame))
+                    if d < d_th and abs(frame - last_frame) < frame_th:
+                    # if d < d_th:
+                        # Same event
+                        new_event = False
+                        event_dict[idx].append([frame, azi, ele])
+                        # print(event_dict)
+                        break
+                if new_event:
+                    print('new event')
+                    event_dict[event_idx] = [[frame, azi, ele]]
+                    event_idx += 1
+                    # print(event_dict)
+
+        elif len(value) == 2:
+            # Two sources
+            for v in value:
+                azi = v[1]
+                ele = v[2]
+                print('++++++')
+                print(frame, azi, ele)
+                # Compute distance with previous frame
+                if not bool(event_dict):  # Empty: append
+                    event_dict[event_idx] = [[frame, azi, ele]]
+                    event_idx += 1
+                    # print(event_dict)
+                else:
+                    # Get all last values
+                    new_event = True
+                    for idx in range(event_idx):
+                        # print('check event ' + str(idx))
+                        last_frame, last_azi, last_ele = event_dict[idx][-1]
+                        d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
+                                                                       deg2rad(last_ele),
+                                                                       deg2rad(azi),
+                                                                       deg2rad(ele))
+                        # print('distances', d, azi, ele, last_azi, last_ele)
+                        print (d, abs(frame - last_frame))
+                        if d < d_th and abs(frame - last_frame) < frame_th:
+                        # if d < d_th:
+                            # Same event
+                            new_event = False
+                            event_dict[idx].append([frame, azi, ele])
+                            # print(event_dict)
+                            break
+                    if new_event:
+                        print('new event')
+                        event_dict[event_idx] = [[frame, azi, ele]]
+                        event_idx += 1
+                        # print(event_dict)
+
+
+    # Build metadata result array
+    metadata_result_array = []
+    hop_size = params['required_window_hop']  # s
+    for event_idx, event_values in event_dict.iteritems():
+        start_frame = event_values[0][0]
+        end_frame = event_values[-1][0]
+
+        azis = np.asarray(event_values)[:,1]
+        azi = circmedian(np.asarray(azis), unit='deg')
+        eles = np.asarray(event_values)[:,2]
+        ele = np.median(eles)
+
+        metadata_result_array.append([None, start_frame * hop_size, end_frame * hop_size, ele, azi, None])
+
+
+    # num_frames = file_duration / hop_size
+    # for frame in range(int(num_frames)):
+    #     # for row in result_quantized:
+    #     #     frame = row[0]
+    #     if frame >= start and frame <= end:
+    #         result_averaged_dict[frame] = [0, c[0], c[1]]
+
+
+    # TODO
+    # # Re-build averaged dict
+    # # Add all missing time windows and average values
+    result_dict = {}
+    class_idx = 0 # whatever
+    for event_values in metadata_result_array:
+        start_frame = int(np.floor(event_values[1]/hop_size))
+        end_frame = int(np.ceil(event_values[2]/hop_size))
+        ele = event_values[3]
+        azi = event_values[4]
+
+        for frame in range(start_frame, end_frame):
+            try:
+                # result_dict[frame].append([class_idx, azi, ele])
+                v = result_dict[frame]
+                result_dict[frame] = [v, [class_idx, azi, ele]]
+            except KeyError:
+                result_dict[frame] = [class_idx, azi, ele]
+
+
+
     return metadata_result_array, result_averaged_dict
+    # return metadata_result_array, result_dict
+
+
+### TODO TODO TODO discriminate here also from angle
+def find_regions_position(result_averaged_dict, frame_th=1, dist_th=10):
+
+    starts = []
+    ends = []
+    frames = result_averaged_dict.keys()
+    # Ensure ascending order
+    frames.sort()
+
+    print(frames)
+    # Add first start
+    # starts.append(frames[0])
+
+    for i, f in enumerate(frames[:-1]):
+        print('---')
+        print (f, f - frames[i-1])
+        if abs(f - frames[i-1]) > frame_th :
+            # start
+            starts.append(f)
+        print (f,frames[i + 1] - f)
+        if frames[i + 1] - f > frame_th :
+            # end
+            ends.append(f)
+
+        print(starts, ends)
+
+    # Add last end
+    ends.append(frames[-1])
+    # print('++++++++')
+    # print(starts, ends)
+
+    assert len(starts) == len(ends)
+
+    edges = []
+    for s, e in zip(starts, ends):
+        edges.append([s, e])
+
+    return edges
+
 
 
 
@@ -610,6 +734,10 @@ def doa_method_variance(data, sr, params):
     K = X.get_num_frequency_bins()
     r = params['r']
 
+
+    # if params['plot']: plt.pcolormesh(e_masked.data[0])
+
+    print('compute doa, directivity...')
     # Diffuseness threshold
     doa = psa.compute_DOA(X)
     directivity = X.compute_ksi_re(r=r)
@@ -618,6 +746,28 @@ def doa_method_variance(data, sr, params):
     if params['plot']: psa.plot_doa(doa, title=str(r))
     if params['plot']: plt.show()
 
+    print('compute energy density')
+    e = psa.compute_energy_density(X)
+    block_size = 51
+    # for mode in ['gaussian', 'mean', 'median']:
+    #     tl = e.compute_threshold_local(block_size=block_size, mode=mode)
+    #     e_mask = e.compute_mask(tl)
+    #     if params['plot']: psa.plot_magnitude_spectrogram(e, title='e')
+    #     if params['plot']: psa.plot_mask(e_mask, title='e_mask'+mode)
+    #     plt.show()
+    #     doa_e_masked = doa.apply_mask(e_mask)
+    #     if params['plot']:  psa.plot_doa(doa_e_masked, title='e mask'+mode)
+    #     plt.show()
+    tl = e.compute_threshold_local(block_size=block_size)
+    e_mask = e.compute_mask(tl)
+    if params['plot']: psa.plot_magnitude_spectrogram(e, title='e')
+    if params['plot']: psa.plot_mask(e_mask, title='e_mask')
+    plt.show()
+    doa_e_masked = doa.apply_mask(e_mask)
+    if params['plot']:  psa.plot_doa(doa_e_masked, title='e mask')
+    plt.show()
+
+    print('compute doa std...')
     # Doa Variance
     # Aximuth std depends on the location!! so let's just use elevation stf
     vicinity_radius = params['doa_std_vicinity_radius']
@@ -636,23 +786,30 @@ def doa_method_variance(data, sr, params):
 
     for k in range(r_k, K-r_k):
         for n in range(r_n, N-r_n):
-            # std[0, k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
-            std[k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
+            # azi
+            std[k, n] = scipy.stats.circstd(doa.data[0, k-r_k:k+r_k+1, n-r_n:n+r_n+1], high=np.pi, low=-np.pi)
+            # ele
+            # std[k, n] = np.std(doa.data[1, k-r_k:k+r_k+1, n-r_n:n+r_n+1])
 
     # Edges: large value
     std_max = np.max(std)
-    for k in range(0, r_k):
-        # std[m, k, :] = std[m, k+doa_std_vicinity_radius, :]
-        std[k, :] = std_max
-    for k in range(K-r_k, K):
-        # std[m, k, :] = std[m, K-doa_std_vicinity_radius-1, :]
-        std[ k, :] = std_max
-    for n in range(0, r_n):
-        # std[m, :, n] = std[m, :, n + doa_std_vicinity_radius]
-        std[:, n] = std_max
-    for n in range(N - r_n, N):
-        # std[m, :, n] = std[m, :, N - doa_std_vicinity_radius - 1,]
-        std[:, n] = std_max
+    # for k in range(0, r_k):
+    #     # std[m, k, :] = std[m, k+doa_std_vicinity_radius, :]
+    #     std[k, :] = std_max
+    # for k in range(K-r_k, K):
+    #     # std[m, k, :] = std[m, K-doa_std_vicinity_radius-1, :]
+    #     std[ k, :] = std_max
+    # for n in range(0, r_n):
+    #     # std[m, :, n] = std[m, :, n + doa_std_vicinity_radius]
+    #     std[:, n] = std_max
+    # for n in range(N - r_n, N):
+    #     # std[m, :, n] = std[m, :, N - doa_std_vicinity_radius - 1,]
+    #     std[:, n] = std_max
+    std[0:r_k, :] = std_max
+    std[K-r_k:K, :] = std_max
+    std[:, 0:r_n] = std_max
+    std[:, N - r_n:N] = std_max
+
 
     # Scale values to min/max
     std_scaled = std / std_max
@@ -669,25 +826,27 @@ def doa_method_variance(data, sr, params):
     doa_std = psa.Stft(doa.t, doa.f, std_scaled_inv, doa.sample_rate)
     doa_std_mask = doa_std.compute_mask(th=params['doa_std_th'])
 
-    mask2 = doa_std_mask.apply_mask(directivity_mask)
-    doa_th = doa.apply_mask(mask2)
+    mask_all = doa_std_mask.apply_mask(directivity_mask).apply_mask(e_mask)
+    doa_th = doa.apply_mask(mask_all)
 
+    print('compute doa median average...')
 
     # MEdian averAGE
     median_averaged_doa = np.empty(doa.data.shape)
     median_averaged_doa.fill(np.nan)
     vicinity_size = (2*r_k-1) + (2*r_n-1)
+    doa_median_average_nan_th = params['doa_median_average_nan_th']
     for k in range(r_k, K - r_k):
         for n in range(r_n, N - r_n):
 
             azis = discard_nans(doa_th.data[0, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1].flatten())
-            if azis.size > vicinity_size*0.75:
+            if azis.size > vicinity_size * doa_median_average_nan_th:
                 median_averaged_doa[0, k, n] = circmedian(azis, 'rad')
             # else:
             #     median_averaged_doa[0, k, n] = np.nan
 
             eles = discard_nans(doa_th.data[1, k - r_k:k + r_k + 1, n - r_n:n + r_n + 1].flatten())
-            if eles.size > vicinity_size*0.75:
+            if eles.size > vicinity_size * doa_median_average_nan_th:
                 median_averaged_doa[1, k, n] = np.median(eles)
             # else:
             #     median_averaged_doa[1, k, n] = np.nan
@@ -709,6 +868,8 @@ def doa_method_variance(data, sr, params):
     if params['plot']:
         psa.plot_doa(doa, title='doa')
 
+        psa.plot_doa(doa_e_masked, title='e mask')
+
         # psa.plot_mask(directivity_mask, title='directivity mask')
         psa.plot_doa(doa.apply_mask(directivity_mask), title='directivity mask')
 
@@ -716,7 +877,7 @@ def doa_method_variance(data, sr, params):
         psa.plot_doa(doa.apply_mask(doa_std_mask), title='doa std mask')
 
         # psa.plot_mask(mask2, title='mask 2')
-        psa.plot_doa(doa_th, title='doa mask2')
+        psa.plot_doa(doa_th, title='doa mask all')
 
         psa.plot_doa(doa_median, title='doa circmedian')
         plt.show()
