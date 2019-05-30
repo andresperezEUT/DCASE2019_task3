@@ -41,6 +41,9 @@ def get_params(preset_string=None):
         required_window_hop = 0.02,
         kmeans_rate_th = 20,
 
+        max_angular_distance_within_event = 20, # in degrees
+        max_frame_distance_within_event = 20, # in frames
+        min_num_frames_per_event = 10, # 200 ms at 20ms hop size
 
         # PLOT
         plot = False,
@@ -138,11 +141,11 @@ def get_params(preset_string=None):
         params['doa_std_th'] = 0.75
         params['kmeans_rate_th'] = 1
         params['doa_median_average_nan_th'] = 0.9
-        params['plot'] = False
+        params['plot'] = True
         params['quick_test'] = False
         params['fmin'] = 0
         params['fmax'] = 15000
-        params['quick_test_file_duration'] = 5  # in seconds'
+        params['quick_test_file_duration'] = 10  # in seconds'
         params['min_std_overlapping'] = 30
 
 

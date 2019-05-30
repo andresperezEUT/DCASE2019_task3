@@ -432,8 +432,8 @@ def group_sources_q_overlap(result_quantized, params):
 
     # event_dict: each individual event is a key, and values is a list of [frame, azi, ele]
 
-    d_th = 10 # for example
-    frame_th = 20 # for example
+    d_th = params['max_angular_distance_within_event']
+    frame_th = params['max_frame_distance_within_event']
     event_idx = 0
     event_dict = {}
 
@@ -452,24 +452,41 @@ def group_sources_q_overlap(result_quantized, params):
             # print(frame, azi, ele)
           # Compute distance with previous frame
             if not bool(event_dict): # Empty: append
+                # print('first event')
                 event_dict[event_idx] = [[frame, azi, ele]]
-                # event_idx += 1
+                event_idx += 1
                 # print(event_dict)
             else:
                 # Get all last values
                 new_event = True
                 for idx in range(event_idx):
                     # print('check event '+str(idx))
+
                     last_frame, last_azi, last_ele = event_dict[idx][-1]
-                    d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
-                                                                   deg2rad(last_ele),
+
+                    # Compute distance with median of all previous
+                    azis = np.asarray(event_dict[idx])[:, 1]
+                    eles = np.asarray(event_dict[idx])[:, 2]
+                    median_azi = circmedian(azis, unit='deg')
+                    median_ele = np.median(eles)
+                    d = distance_between_spherical_coordinates_rad(deg2rad(median_azi),
+                                                                   deg2rad(median_ele),
                                                                    deg2rad(azi),
                                                                    deg2rad(ele))
-                    # print('distances', d, azi, ele, last_azi, last_ele)
+
+                    ## Compute distance with last frame
+                    # d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
+                    #                                                deg2rad(last_ele),
+                    #                                                deg2rad(azi),
+                    #                                                deg2rad(ele))
+
+
+                    # print('distances', d, azi, ele, median_azi, median_ele)
                     # print (d, abs(frame - last_frame))
                     if d < d_th and abs(frame - last_frame) < frame_th:
                     # if d < d_th:
                         # Same event
+                        # print('same event')
                         new_event = False
                         event_dict[idx].append([frame, azi, ele])
                         # print(event_dict)
@@ -497,16 +514,32 @@ def group_sources_q_overlap(result_quantized, params):
                     new_event = True
                     for idx in range(event_idx):
                         # print('check event ' + str(idx))
+
                         last_frame, last_azi, last_ele = event_dict[idx][-1]
-                        d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
-                                                                       deg2rad(last_ele),
+
+                        # Compute distance with median of all previous
+                        azis = np.asarray(event_dict[idx])[:, 1]
+                        eles = np.asarray(event_dict[idx])[:, 2]
+                        median_azi = circmedian(azis, unit='deg')
+                        median_ele = np.median(eles)
+                        d = distance_between_spherical_coordinates_rad(deg2rad(median_azi),
+                                                                       deg2rad(median_ele),
                                                                        deg2rad(azi),
                                                                        deg2rad(ele))
+
+                        ## Compute distance with last frame
+                        # d = distance_between_spherical_coordinates_rad(deg2rad(last_azi),
+                        #                                                deg2rad(last_ele),
+                        #                                                deg2rad(azi),
+                        #                                                deg2rad(ele))
+
+
                         # print('distances', d, azi, ele, last_azi, last_ele)
                         # print (d, abs(frame - last_frame))
                         if d < d_th and abs(frame - last_frame) < frame_th:
                         # if d < d_th:
                             # Same event
+                            # print('same event')
                             new_event = False
                             event_dict[idx].append([frame, azi, ele])
                             # print(event_dict)
@@ -518,11 +551,20 @@ def group_sources_q_overlap(result_quantized, params):
                         # print(event_dict)
 
 
+    # Filter events to eliminate the spureous ones
+    event_dict_filtered = {}
+    filtered_event_idx = 0
+    for frame, v in event_dict.iteritems():
+        if len(v) >= params['min_num_frames_per_event']:
+            event_dict_filtered[filtered_event_idx] = event_dict[frame]
+            filtered_event_idx += 1
+
+
     # Build metadata result array
     metadata_result_array = []
     class_id = params['default_class_id']
     hop_size = params['required_window_hop']  # s
-    for event_idx, event_values in event_dict.iteritems():
+    for event_idx, event_values in event_dict_filtered.iteritems():
         start_frame = event_values[0][0]
         end_frame = event_values[-1][0]
 
