@@ -25,7 +25,7 @@ N = 5
 # basic params by default
 lrs = [0.0001]
 batch_sizes = [100]
-mode_last_patch = 'discard'
+mode_last_patch = 'fill'  # fill was found to be better!!
 
 # explore the main params of the net, plus patch_len
 patch_lens = [25, 50, 75, 100]
@@ -44,13 +44,21 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 # output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
 # rnn_nbs = [[32, 32], [64, 64], [128, 128]]      # this is the way to encode 2 layers
 # rnn_nbs = [[32], [64], [128]]      # this is the way to encode 1 layers. it must always be a list of things
-
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
-models = ['crnn_seld_tagger']
-fc_nbs = None
-
-
+# refine
+# output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_RNNx2_refine_cnn128_rnn64_fc32_check_patchLen'
+# cnn_nb_filts = [128]
+# rnn_nbs = [[64, 64]]      # this is the way to encode 2 layers
+# fc_nbs = [[32]]
 # models = ['crnn_seld']
+
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
+models = ['crnn_seld_tagger']
+fc_nbs = [[32], [64]]
+
+
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.5, 0.6]
