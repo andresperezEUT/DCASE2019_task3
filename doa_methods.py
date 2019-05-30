@@ -112,250 +112,206 @@ def fold_doa_into_results_vector(doa_th, sr, params, method='mean'):
             result_quantized.append([new_bin, [row[1], row[2], row[3]]])
         last_bin = new_bin
 
-
-
-    # result_averaged_dict = {}
-    #
-    # for row in result_quantized:
-    #     bin = row[0]
-    #     label = 0  # TODO
-    #
-    #     azis = np.asarray(row[1:])[:, 1]
-    #     eles = np.asarray(row[1:])[:, 2]
-    #
-    #     if method == 'kmeans':
-    #         x = np.asarray([azis, eles]).T
-    #         # print (bin)
-    #         kmeans1 = KMeans(n_clusters=1, random_state=0).fit(x)
-    #         kmeans2 = KMeans(n_clusters=2, random_state=0).fit(x)
-    #         rate = kmeans1.inertia_ / kmeans2.inertia_
-    #
-    #         if rate > params['kmeans_rate_th']:
-    #             # 2 clusters:
-    #             result_averaged_dict[bin] = []
-    #             for c in kmeans2.cluster_centers_:
-    #                 print(bin, azi, ele)
-    #                 azi = c[0]
-    #                 ele = c[1]
-    #                 result_averaged_dict[bin].append([label, azi, ele])
-    #                 print result_averaged_dict[bin]
-    #         else:
-    #             # 1 cluster: median
-    #             azi = circmedian(azis, unit='deg')
-    #             ele = np.median(eles)
-    #             result_averaged_dict[bin] = [label, azi, ele]
-    #
-    #     ## Single source approach
-    #     elif method == 'median':
-    #         azi = circmedian(azis, unit='deg')
-    #         ele = np.median(eles)
-    #         result_averaged_dict[bin] = [label, azi, ele]
-    #
-    #     elif method == 'mean':
-    #         azi = scipy.stats.circmean(azis, high=180, low=-180)
-    #         ele = np.mean(eles)
-    #         result_averaged_dict[bin] = [label, azi, ele]
-
     return result, result_quantized
 
 
 
 
-##### TODO!!!!
-## ADAPT TO OVERLAPPING CASE
-## COMPUTE CONTINUITY ON THE WHOLE BAND WITHOUT PREVIOUS PROCESSING...
-
-def find_regions(result_averaged_dict, th=30):
-
-    starts = []
-    ends = []
-    frames = result_averaged_dict.keys()
-    # Ensure ascending order
-    frames.sort()
-
-    print(frames)
-    # Add first start
-    # starts.append(frames[0])
-
-    for i, f in enumerate(frames[:-1]):
-        print('---')
-        print (f, f - frames[i-1])
-        if abs(f - frames[i-1]) > th :
-            # start
-            starts.append(f)
-        print (f,frames[i + 1] - f)
-        if frames[i + 1] - f > th :
-            # end
-            ends.append(f)
-
-        print(starts, ends)
-
-    # Add last end
-    ends.append(frames[-1])
-    print('++++++++')
-    print(starts, ends)
-
-    assert len(starts) == len(ends)
-
-    edges = []
-    for s, e in zip(starts, ends):
-        edges.append([s, e])
-
-    return edges
-
-
-# Assumes no overlapping: compute mean of each region (source activity)
-def group_sources(result_averaged_dict):
-
-    hop_size = 0.02 # s
-
-    sources_array = []
-    regions = find_regions(result_averaged_dict)
-    metadata_result_array = []
-
-    # find mean of each region
-    for r in regions:
-        start = r[0]
-        end = r[1]
-
-        azis = []
-        eles = []
-        for frame, value in result_averaged_dict.iteritems():
-            if frame >= start and frame <= end:
-                # print (frame, value)
-                azis.append(value[1])
-                eles.append(value[2])
-                # eles.append(value[2])
-        print(azis)
-        # print(eles)
-        # azis = result_averaged_dict.
-
-        mean_azi = scipy.stats.circmean(azis, high=180, low=-180)
-        std_azi = scipy.stats.circstd(azis, high=180, low=-180)
-        mean_ele = np.mean(eles)
-        std_ele = np.std(eles)
-
-        metadata_result_array.append([ None, start*hop_size, end*hop_size, mean_ele, mean_azi, None ])
-
-    return metadata_result_array
-
-
-
-def find_regions_q(result_quantized, th=30):
-
-    starts = []
-    ends = []
-    frames = []
-    for row in result_quantized:
-        frames.append(row[0])
-    # Ensure ascending order
-    frames.sort()
-
-    # print(frames)
-    # Add first start
-    # starts.append(frames[0])
-
-    for i, f in enumerate(frames[:-1]):
-        # print('---')
-        # print (f, f - frames[i-1])
-        if abs(f - frames[i-1]) > th :
-            # start
-            starts.append(f)
-        # print (f,frames[i + 1] - f)
-        if frames[i + 1] - f > th :
-            # end
-            ends.append(f)
-
-        # print(starts, ends)
-
-    # Add last end
-    ends.append(frames[-1])
-    # print('++++++++')
-    # print(starts, ends)
-
-    assert len(starts) == len(ends)
-
-    edges = []
-    for s, e in zip(starts, ends):
-        edges.append([s, e])
-
-    return edges
-
-
-# Assumes 2-overlapping, but only in the whole range of activity continuity
-# Build result_averaged_dict by median-averaging the whole activity range
-def group_sources_q(result_quantized, params):
-
-    hop_size = params['required_window_hop'] # s
-    file_duration = params['file_duration'] # s
-    regions = find_regions_q(result_quantized)
-    metadata_result_array = []
-    result_averaged_dict = {}
-
-    azis = []
-    eles = []
-
-    # find mean of each region
-    for r_idx, r in enumerate(regions):
-        # print('region '+str(r_idx))
-        start = r[0]
-        end = r[1]
-        # print('start ',start)
-        # print('end ',end)
-
-        # Get azis and eles for each time region
-        azis.append([])
-        eles.append([])
-        for row in result_quantized:
-            frame = row[0]
-            if frame >= start and frame <= end:
-                # print(frame)
-                for v in row[1:]:
-                    # print(v[1:])
-                    azis[r_idx].append(v[1])
-                    eles[r_idx].append(v[2])
-
-        # Kmeans expects values as degrees
-        x = deg2rad(np.asarray([azis[r_idx], eles[r_idx]]).T)
-        kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
-        kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
-        rate = kmeans1.inertia_ / kmeans2.inertia_
-        # print(rate)
-
-        cluster_centers = kmeans2.cluster_centers_ if rate > params['kmeans_rate_th'] else kmeans1.cluster_centers_
-
-        # Output values are expected in degrees
-        for c in cluster_centers:
-            c = rad2deg(c)
-            metadata_result_array.append([None, start * hop_size, end * hop_size, c[1], c[0], None])
-
-        # Build averaged dict
-        # Add all missing time windows...
-        num_frames = file_duration/hop_size
-        for frame in range(int(num_frames)):
-        # for row in result_quantized:
-        #     frame = row[0]
-            if frame >= start and frame <= end:
-                    result_averaged_dict[frame] = [0, c[0], c[1]]
-
-        # for frame, value in result_quantized.iteritems():
-        #     if frame >= start and frame <= end:
-        #         # print (frame, value)
-        #         azis.append(value[1])
-        #         eles.append(value[2])
-        #         # eles.append(value[2])
-        # print(azis)
-        # print(eles)
-        # azis = result_averaged_dict.
-
-        # mean_azi = scipy.stats.circmean(azis, high=180, low=-180)
-        # std_azi = scipy.stats.circstd(azis, high=180, low=-180)
-        # mean_ele = np.mean(eles)
-        # std_ele = np.std(eles)
-        #
-        # metadata_result_array.append([ None, start*hop_size, end*hop_size, mean_ele, mean_azi, None ])
-
-    return metadata_result_array, result_averaged_dict
+# ##### TODO!!!!
+# ## ADAPT TO OVERLAPPING CASE
+# ## COMPUTE CONTINUITY ON THE WHOLE BAND WITHOUT PREVIOUS PROCESSING...
+#
+# def find_regions(result_averaged_dict, th=30):
+#
+#     starts = []
+#     ends = []
+#     frames = result_averaged_dict.keys()
+#     # Ensure ascending order
+#     frames.sort()
+#
+#     print(frames)
+#     # Add first start
+#     # starts.append(frames[0])
+#
+#     for i, f in enumerate(frames[:-1]):
+#         print('---')
+#         print (f, f - frames[i-1])
+#         if abs(f - frames[i-1]) > th :
+#             # start
+#             starts.append(f)
+#         print (f,frames[i + 1] - f)
+#         if frames[i + 1] - f > th :
+#             # end
+#             ends.append(f)
+#
+#         print(starts, ends)
+#
+#     # Add last end
+#     ends.append(frames[-1])
+#     print('++++++++')
+#     print(starts, ends)
+#
+#     assert len(starts) == len(ends)
+#
+#     edges = []
+#     for s, e in zip(starts, ends):
+#         edges.append([s, e])
+#
+#     return edges
+#
+#
+# # Assumes no overlapping: compute mean of each region (source activity)
+# def group_sources(result_averaged_dict):
+#
+#     hop_size = 0.02 # s
+#
+#     sources_array = []
+#     regions = find_regions(result_averaged_dict)
+#     metadata_result_array = []
+#
+#     # find mean of each region
+#     for r in regions:
+#         start = r[0]
+#         end = r[1]
+#
+#         azis = []
+#         eles = []
+#         for frame, value in result_averaged_dict.iteritems():
+#             if frame >= start and frame <= end:
+#                 # print (frame, value)
+#                 azis.append(value[1])
+#                 eles.append(value[2])
+#                 # eles.append(value[2])
+#         print(azis)
+#         # print(eles)
+#         # azis = result_averaged_dict.
+#
+#         mean_azi = scipy.stats.circmean(azis, high=180, low=-180)
+#         std_azi = scipy.stats.circstd(azis, high=180, low=-180)
+#         mean_ele = np.mean(eles)
+#         std_ele = np.std(eles)
+#
+#         metadata_result_array.append([ None, start*hop_size, end*hop_size, mean_ele, mean_azi, None ])
+#
+#     return metadata_result_array
+#
+#
+#
+# def find_regions_q(result_quantized, th=30):
+#
+#     starts = []
+#     ends = []
+#     frames = []
+#     for row in result_quantized:
+#         frames.append(row[0])
+#     # Ensure ascending order
+#     frames.sort()
+#
+#     # print(frames)
+#     # Add first start
+#     # starts.append(frames[0])
+#
+#     for i, f in enumerate(frames[:-1]):
+#         # print('---')
+#         # print (f, f - frames[i-1])
+#         if abs(f - frames[i-1]) > th :
+#             # start
+#             starts.append(f)
+#         # print (f,frames[i + 1] - f)
+#         if frames[i + 1] - f > th :
+#             # end
+#             ends.append(f)
+#
+#         # print(starts, ends)
+#
+#     # Add last end
+#     ends.append(frames[-1])
+#     # print('++++++++')
+#     # print(starts, ends)
+#
+#     assert len(starts) == len(ends)
+#
+#     edges = []
+#     for s, e in zip(starts, ends):
+#         edges.append([s, e])
+#
+#     return edges
+#
+#
+# # Assumes 2-overlapping, but only in the whole range of activity continuity
+# # Build result_averaged_dict by median-averaging the whole activity range
+# def group_sources_q(result_quantized, params):
+#
+#     hop_size = params['required_window_hop'] # s
+#     file_duration = params['file_duration'] # s
+#     regions = find_regions_q(result_quantized)
+#     metadata_result_array = []
+#     result_averaged_dict = {}
+#
+#     azis = []
+#     eles = []
+#
+#     # find mean of each region
+#     for r_idx, r in enumerate(regions):
+#         # print('region '+str(r_idx))
+#         start = r[0]
+#         end = r[1]
+#         # print('start ',start)
+#         # print('end ',end)
+#
+#         # Get azis and eles for each time region
+#         azis.append([])
+#         eles.append([])
+#         for row in result_quantized:
+#             frame = row[0]
+#             if frame >= start and frame <= end:
+#                 # print(frame)
+#                 for v in row[1:]:
+#                     # print(v[1:])
+#                     azis[r_idx].append(v[1])
+#                     eles[r_idx].append(v[2])
+#
+#         # Kmeans expects values as degrees
+#         x = deg2rad(np.asarray([azis[r_idx], eles[r_idx]]).T)
+#         kmeans1 = HybridKmeans_implementation(k=1, max_iter=100).run(x)
+#         kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+#         rate = kmeans1.inertia_ / kmeans2.inertia_
+#         # print(rate)
+#
+#         cluster_centers = kmeans2.cluster_centers_ if rate > params['kmeans_rate_th'] else kmeans1.cluster_centers_
+#
+#         # Output values are expected in degrees
+#         for c in cluster_centers:
+#             c = rad2deg(c)
+#             metadata_result_array.append([None, start * hop_size, end * hop_size, c[1], c[0], None])
+#
+#         # Build averaged dict
+#         # Add all missing time windows...
+#         num_frames = file_duration/hop_size
+#         for frame in range(int(num_frames)):
+#         # for row in result_quantized:
+#         #     frame = row[0]
+#             if frame >= start and frame <= end:
+#                     result_averaged_dict[frame] = [0, c[0], c[1]]
+#
+#         # for frame, value in result_quantized.iteritems():
+#         #     if frame >= start and frame <= end:
+#         #         # print (frame, value)
+#         #         azis.append(value[1])
+#         #         eles.append(value[2])
+#         #         # eles.append(value[2])
+#         # print(azis)
+#         # print(eles)
+#         # azis = result_averaged_dict.
+#
+#         # mean_azi = scipy.stats.circmean(azis, high=180, low=-180)
+#         # std_azi = scipy.stats.circstd(azis, high=180, low=-180)
+#         # mean_ele = np.mean(eles)
+#         # std_ele = np.std(eles)
+#         #
+#         # metadata_result_array.append([ None, start*hop_size, end*hop_size, mean_ele, mean_azi, None ])
+#
+#     return metadata_result_array, result_averaged_dict
 
 
 
@@ -377,7 +333,7 @@ def group_sources_q_overlap(result_quantized, params):
     std_all = []
 
     std_th = params['min_std_overlapping']
-    label = 0
+    label = params['default_class_id']
 
     for r_idx, row in enumerate(result_quantized):
         frame = row[0]
@@ -594,44 +550,44 @@ def group_sources_q_overlap(result_quantized, params):
     return metadata_result_array, result_dict
 
 
-### TODO TODO TODO discriminate here also from angle
-def find_regions_position(result_averaged_dict, frame_th=1, dist_th=10):
-
-    starts = []
-    ends = []
-    frames = result_averaged_dict.keys()
-    # Ensure ascending order
-    frames.sort()
-
-    print(frames)
-    # Add first start
-    # starts.append(frames[0])
-
-    for i, f in enumerate(frames[:-1]):
-        print('---')
-        print (f, f - frames[i-1])
-        if abs(f - frames[i-1]) > frame_th :
-            # start
-            starts.append(f)
-        print (f,frames[i + 1] - f)
-        if frames[i + 1] - f > frame_th :
-            # end
-            ends.append(f)
-
-        print(starts, ends)
-
-    # Add last end
-    ends.append(frames[-1])
-    # print('++++++++')
-    # print(starts, ends)
-
-    assert len(starts) == len(ends)
-
-    edges = []
-    for s, e in zip(starts, ends):
-        edges.append([s, e])
-
-    return edges
+# ### TODO TODO TODO discriminate here also from angle
+# def find_regions_position(result_averaged_dict, frame_th=1, dist_th=10):
+#
+#     starts = []
+#     ends = []
+#     frames = result_averaged_dict.keys()
+#     # Ensure ascending order
+#     frames.sort()
+#
+#     print(frames)
+#     # Add first start
+#     # starts.append(frames[0])
+#
+#     for i, f in enumerate(frames[:-1]):
+#         print('---')
+#         print (f, f - frames[i-1])
+#         if abs(f - frames[i-1]) > frame_th :
+#             # start
+#             starts.append(f)
+#         print (f,frames[i + 1] - f)
+#         if frames[i + 1] - f > frame_th :
+#             # end
+#             ends.append(f)
+#
+#         print(starts, ends)
+#
+#     # Add last end
+#     ends.append(frames[-1])
+#     # print('++++++++')
+#     # print(starts, ends)
+#
+#     assert len(starts) == len(ends)
+#
+#     edges = []
+#     for s, e in zip(starts, ends):
+#         edges.append([s, e])
+#
+#     return edges
 
 
 

@@ -50,11 +50,11 @@ print('Folder path: ' + data_folder_path              )
 # Iterate over all audio files
 for audio_file in os.listdir(data_folder_path):
     if audio_file != '.DS_Store': # Fucking OSX
+        print(audio_file)
 
         # Open audio file
         b_format, sr = sf.read(os.path.join(data_folder_path,audio_file))
 
-        # -------------- DOA ESTIMATION --------------
         # Perform DOA estimation
         doa_method_instance = getattr(doa_methods, params['doa_method'])
         result, result_quantized = doa_method_instance(b_format, sr, params)
@@ -66,20 +66,11 @@ for audio_file in os.listdir(data_folder_path):
         metadata_result_array, result_averaged_dict = doa_methods.group_sources_q_overlap(result_quantized, params)
 
         # Write the localization results in the metadata format
-        # TODO!
         metadata_result_file_name = os.path.splitext(audio_file)[0] + params['metadata_result_file_extension']
         metadata_result_file_path = os.path.join(metadata_result_doa_folder_path, metadata_result_file_name)
         write_metadata_result_file(metadata_result_array, metadata_result_file_path)
 
-        # -------------- SOURCE CLASSIFICATION --------------
-        # Extract mono sources from metadata result file and b-format audio
-        # beamforming(b_format,)
-
-
-        # Write DOA output results to file in the proper format
-
-        # TODO: PUT INSIDE PARAMETERS
-        # ## WRITE FROM AVERAGED DICT
+        # Write the localization results in the output format
         output_result_file_name = os.path.splitext(audio_file)[0] + params['output_result_file_extension']
         output_result_file_path = os.path.join(output_result_doa_folder_path, output_result_file_name)
         write_output_result_file(result_averaged_dict, output_result_file_path)
