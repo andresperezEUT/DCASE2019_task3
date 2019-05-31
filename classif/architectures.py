@@ -834,9 +834,9 @@ def get_model_crnn_seld_tagger(params_crnn=None, params_learn=None, params_extra
     # note that the last GRU does not return_sequences=True. HEnce there is no need for TimeDistributed, nor Flatten
     # much simpler
     # todo meter algo de dropout? o quiza una dense normal (no TimeDistributed)?
-    for nb_fnn_filt in params_crnn.get('fc_nb'):
-        spec_rnn = Dense(nb_fnn_filt)(spec_rnn)
-        spec_rnn = Dropout(params_crnn.get('dropout_rate'))(spec_rnn)
+    # for nb_fnn_filt in params_crnn.get('fc_nb'):
+    #     spec_rnn = Dense(nb_fnn_filt)(spec_rnn)
+    #     spec_rnn = Dropout(params_crnn.get('dropout_rate'))(spec_rnn)
 
     spec_x = Dense(n_class)(spec_rnn)
     out = Activation('softmax')(spec_x)

@@ -54,10 +54,12 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_GRU_layer_more'
 models = ['crnn_seld_tagger']
-fc_nbs = [[32], [64]]
-
+# fc_nbs = [[32], [64]]
+rnn_nbs = [[32, 32], [64, 64]]      # this is the way to encode 2 layers
+# fc_nbs = None
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
