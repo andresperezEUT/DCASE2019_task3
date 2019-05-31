@@ -69,9 +69,9 @@ models = ['crnn_seld_tagger']
 patch_lens = [50, 75, 100]   # to start in
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_withFORGOTTEN_BN'
 
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact'
-#
-# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact'
+
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s'
 
 
 
