@@ -64,6 +64,16 @@ output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_m
 patch_lens = [50, 75, 100]   # to start in
 
 
+#
+models = ['crnn_seld_tagger']
+patch_lens = [50, 75, 100]   # to start in
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_withFORGOTTEN_BN'
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact'
+#
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s'
+
+
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin

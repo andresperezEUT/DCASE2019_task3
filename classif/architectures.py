@@ -806,11 +806,15 @@ def get_model_crnn_seld_tagger(params_crnn=None, params_learn=None, params_extra
     spec_start = Input(shape=input_shape)
     spec_cnn = spec_start
 
+    # pre activation only once
+    # spec_cnn = BatchNormalization(axis=1)(spec_cnn)
+    # spec_cnn = Activation('relu')(spec_cnn)
+
     # CNN
     for i, convCnt in enumerate(params_crnn.get('cnn_pool_size')):
         spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=(3, 3), padding='same')(spec_cnn)
         # after a Conv2D layer with data_format="channels_first", set axis=1
-        spec_x = BatchNormalization(axis=1)(spec_cnn)
+        spec_cnn = BatchNormalization(axis=1)(spec_cnn)
         spec_cnn = Activation('relu')(spec_cnn)
         spec_cnn = MaxPooling2D(pool_size=(1, params_crnn.get('cnn_pool_size')[i]))(spec_cnn)
         spec_cnn = Dropout(params_crnn.get('dropout_rate'))(spec_cnn)
