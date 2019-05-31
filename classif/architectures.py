@@ -807,8 +807,8 @@ def get_model_crnn_seld_tagger(params_crnn=None, params_learn=None, params_extra
     spec_cnn = spec_start
 
     # pre activation only once
-    # spec_cnn = BatchNormalization(axis=1)(spec_cnn)
-    # spec_cnn = Activation('relu')(spec_cnn)
+    spec_cnn = BatchNormalization(axis=1)(spec_cnn)
+    spec_cnn = Activation('relu')(spec_cnn)
 
     # CNN
     for i, convCnt in enumerate(params_crnn.get('cnn_pool_size')):
