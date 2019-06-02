@@ -85,12 +85,12 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # trying with the lr of Keras by default (same used by SA in SELD and SED
-lrs = [0.001]
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_lr0.001'
+# lrs = [0.001]
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_lr0.001'
 
 # trying with other batchsizes. SA usees 128 in SED, 16 in SELD
-# batch_sizes = [64, 128]
-# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_batch_64_128'
+batch_sizes = [64, 128]
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_batch_64_128'
 
 
 
