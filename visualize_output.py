@@ -35,56 +35,55 @@ def visualize_output(pred_path, ref_dir, aud_dir, params):
     # fixed hoplength of 0.02 seconds for evaluation
     hop_s = 0.02
 
-    for pred_file in os.listdir(pred_path):
-        if pred_file != '.DS_Store': # Fucking OSX
+    pred_files = [f for f in os.listdir(pred_path) if not f.startswith('.')]
+    for pred_file in pred_files:
+        print(pred_file)
 
-            print(pred_file)
+        # check that gt file exists
 
-            # check that gt file exists
+        # load the predicted output format
+        pred = os.path.join(pred_path, pred_file)
+        pred_dict = evaluation_metrics.load_output_format_file(pred)
 
-            # load the predicted output format
-            pred = os.path.join(pred_path, pred_file)
-            pred_dict = evaluation_metrics.load_output_format_file(pred)
+        # load the reference output format
+        feat_cls = cls_feature_class.FeatureClass()
+        ref_filename = os.path.basename(pred)
+        ref_path = os.path.join(ref_dir, ref_filename)
 
-            # load the reference output format
-            feat_cls = cls_feature_class.FeatureClass()
-            ref_filename = os.path.basename(pred)
-            ref_path = os.path.join(ref_dir, ref_filename)
+        if not os.path.exists(ref_path):
+            print('Metadata file not found: ' + ref_path)
+        else:
+            ref_desc_dict = feat_cls.read_desc_file(ref_path, in_sec=True)
+            ref_dict = evaluation_metrics.description_file_to_output_format(ref_desc_dict, feat_cls.get_classes(), hop_s)
 
-            if not os.path.exists(ref_path):
-                print('Metadata file not found: ' + ref_path)
+            pred_data = collect_classwise_data(pred_dict)
+            ref_data = collect_classwise_data(ref_dict)
+
+            nb_classes = len(feat_cls.get_classes())
+
+            # load the audio and extract spectrogram
+            # ref_filename = os.path.basename(pred).replace('.csv', '.wav')
+            # audio, fs = feat_cls._load_audio(os.path.join(aud_dir, ref_filename))
+            # stft = np.abs(np.squeeze(feat_cls._spectrogram(audio[:, :1])))
+            # stft = librosa.amplitude_to_db(stft, ref=np.max)
+
+            if params['quick_test']:
+                xmax = params['quick_test_file_duration']
             else:
-                ref_desc_dict = feat_cls.read_desc_file(ref_path, in_sec=True)
-                ref_dict = evaluation_metrics.description_file_to_output_format(ref_desc_dict, feat_cls.get_classes(), hop_s)
+                xmax = 60
 
-                pred_data = collect_classwise_data(pred_dict)
-                ref_data = collect_classwise_data(ref_dict)
-
-                nb_classes = len(feat_cls.get_classes())
-
-                # load the audio and extract spectrogram
-                # ref_filename = os.path.basename(pred).replace('.csv', '.wav')
-                # audio, fs = feat_cls._load_audio(os.path.join(aud_dir, ref_filename))
-                # stft = np.abs(np.squeeze(feat_cls._spectrogram(audio[:, :1])))
-                # stft = librosa.amplitude_to_db(stft, ref=np.max)
-
-                if params['quick_test']:
-                    xmax = params['quick_test_file_duration']
-                else:
-                    xmax = 60
-
-                plot.figure(figsize=plot.figaspect(1 / 2.))
-                plot.suptitle(title + ' ' + ref_filename)
-                gs = gridspec.GridSpec(2, 2)
-                # ax0 = plot.subplot(gs[0, :]), librosa.display.specshow(stft.T, sr=fs, x_axis='time', y_axis='linear')
-                # ax1 = plot.subplot(gs[1, :2]), plot_func(ref_data, hop_s, ind=1), plot.ylim([-1, nb_classes + 1]), plot.title('SED reference')
-                # ax2 = plot.subplot(gs[1, 2:]), plot_func(pred_data, hop_s, ind=1), plot.ylim([-1, nb_classes + 1]), plot.title('SED predicted')
-                ax3 = plot.subplot(gs[0, 0]), plot_func(ref_data, hop_s, ind=2), plot.ylim([-190, 190]), plot.title('Azimuth DOA reference'), plot.xlim(0, xmax)
-                ax4 = plot.subplot(gs[0, 1]), plot_func(pred_data, hop_s, ind=2), plot.ylim([-190, 190]), plot.title('Azimuth DOA predicted'), plot.xlim(0, xmax)
-                ax5 = plot.subplot(gs[1, 0]), plot_func(ref_data, hop_s, ind=3, plot_x_ax=True), plot.ylim([-50, 50]), plot.title('Elevation DOA reference'), plot.xlim(0, xmax)
-                ax6 = plot.subplot(gs[1, 1]), plot_func(pred_data, hop_s, ind=3, plot_x_ax=True), plot.ylim([-50, 50]), plot.title('Elevation DOA predicted'), plot.xlim(0, xmax)
-                # ax_lst = [ax0, ax1, ax2, ax3, ax4, ax5, ax6]
-                ax_lst = [ax3, ax4, ax5, ax6]
-                # if params['quick_test']: plot.xlim(0,params['quick_test_file_duration'])
-                plot.show()
+            plot.figure(figsize=plot.figaspect(1 / 2.))
+            plot.suptitle(title + ' ' + ref_filename)
+            gs = gridspec.GridSpec(2, 2)
+            # ax0 = plot.subplot(gs[0, :]), librosa.display.specshow(stft.T, sr=fs, x_axis='time', y_axis='linear')
+            # ax1 = plot.subplot(gs[1, :2]), plot_func(ref_data, hop_s, ind=1), plot.ylim([-1, nb_classes + 1]), plot.title('SED reference')
+            # ax2 = plot.subplot(gs[1, 2:]), plot_func(pred_data, hop_s, ind=1), plot.ylim([-1, nb_classes + 1]), plot.title('SED predicted')
+            ax3 = plot.subplot(gs[0, 0]), plot_func(ref_data, hop_s, ind=2), plot.ylim([-190, 190]), plot.title('Azimuth DOA reference'), plot.xlim(0, xmax)
+            ax4 = plot.subplot(gs[0, 1]), plot_func(pred_data, hop_s, ind=2), plot.ylim([-190, 190]), plot.title('Azimuth DOA predicted'), plot.xlim(0, xmax)
+            ax5 = plot.subplot(gs[1, 0]), plot_func(ref_data, hop_s, ind=3, plot_x_ax=True), plot.ylim([-50, 50]), plot.title('Elevation DOA reference'), plot.xlim(0, xmax)
+            ax6 = plot.subplot(gs[1, 1]), plot_func(pred_data, hop_s, ind=3, plot_x_ax=True), plot.ylim([-50, 50]), plot.title('Elevation DOA predicted'), plot.xlim(0, xmax)
+            # ax_lst = [ax0, ax1, ax2, ax3, ax4, ax5, ax6]
+            ax_lst = [ax3, ax4, ax5, ax6]
+            # if params['quick_test']: plot.xlim(0,params['quick_test_file_duration'])
+            plot.show()
 

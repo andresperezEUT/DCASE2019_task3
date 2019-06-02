@@ -48,32 +48,32 @@ print('Folder path: ' + data_folder_path              )
 
 
 # Iterate over all audio files
-for audio_file in os.listdir(data_folder_path):
-    if audio_file != '.DS_Store': # Fucking OSX
-        print(audio_file)
+audio_files = [f for f in os.listdir(data_folder_path) if not f.startswith('.')]
+for audio_file in audio_files:
+    print(audio_file)
 
-        # Open audio file
-        b_format, sr = sf.read(os.path.join(data_folder_path,audio_file))
+    # Open audio file
+    b_format, sr = sf.read(os.path.join(data_folder_path,audio_file))
 
-        # Perform DOA estimation
-        doa_method_instance = getattr(doa_methods, params['doa_method'])
-        result, result_quantized = doa_method_instance(b_format, sr, params)
+    # Perform DOA estimation
+    doa_method_instance = getattr(doa_methods, params['doa_method'])
+    result, result_quantized = doa_method_instance(b_format, sr, params)
 
-        # Postprocess the localization results
-        # TODO!
-        # metadata_result_array = doa_methods.group_sources(result_averaged_dict)
-        # metadata_result_array, result_averaged_dict = doa_methods.group_sources_q(result_quantized, params)
-        metadata_result_array, result_averaged_dict = doa_methods.group_sources_q_overlap(result_quantized, params)
+    # Postprocess the localization results
+    # TODO!
+    # metadata_result_array = doa_methods.group_sources(result_averaged_dict)
+    # metadata_result_array, result_averaged_dict = doa_methods.group_sources_q(result_quantized, params)
+    metadata_result_array, output_result_dict = doa_methods.group_sources_q_overlap(result_quantized, params)
 
-        # Write the localization results in the metadata format
-        metadata_result_file_name = os.path.splitext(audio_file)[0] + params['metadata_result_file_extension']
-        metadata_result_file_path = os.path.join(metadata_result_doa_folder_path, metadata_result_file_name)
-        write_metadata_result_file(metadata_result_array, metadata_result_file_path)
+    # Write the localization results in the metadata format
+    metadata_result_file_name = os.path.splitext(audio_file)[0] + params['metadata_result_file_extension']
+    metadata_result_file_path = os.path.join(metadata_result_doa_folder_path, metadata_result_file_name)
+    write_metadata_result_file(metadata_result_array, metadata_result_file_path)
 
-        # Write the localization results in the output format
-        output_result_file_name = os.path.splitext(audio_file)[0] + params['output_result_file_extension']
-        output_result_file_path = os.path.join(output_result_doa_folder_path, output_result_file_name)
-        write_output_result_file(result_averaged_dict, output_result_file_path)
+    # Write the localization results in the output format
+    output_result_file_name = os.path.splitext(audio_file)[0] + params['output_result_file_extension']
+    output_result_file_path = os.path.join(output_result_doa_folder_path, output_result_file_name)
+    write_output_result_file(output_result_dict, output_result_file_path)
 
 print('-------------- PROCESSING FINISHED --------------')
 print('                                                 ')
