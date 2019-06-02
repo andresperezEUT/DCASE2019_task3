@@ -23,16 +23,17 @@ N = 5
 
 # params to try************************************
 # basic params by default
+# lr=0.001 in Adam this is the default
 lrs = [0.0001]
 batch_sizes = [100]
-mode_last_patch = 'fill'  # fill was found to be better!!
+# mode_last_patch = 'fill'  # fill was found to be better!!
 
 # explore the main params of the net, plus patch_len
-patch_lens = [25, 50, 75, 100]
-cnn_nb_filts = [64, 128]
-rnn_nbs = [[32], [64], [128]]
+# patch_lens = [25, 50, 75, 100]
+# cnn_nb_filts = [64, 128]
+# rnn_nbs = [[32], [64], [128]]
 # fc_nbs = [[16], [32], [64]]
-dropout_rate = 0.5  # this was found to be VERY important. Always include
+# dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 # output_file = 'crnn_seld_explore_net_params_NOdropout'
 # output_file = 'crnn_seld_explore_net_params_YESdropout'
@@ -56,22 +57,40 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_GRU_layer_more'
-models = ['crnn_seld_tagger']
+# models = ['crnn_seld_tagger']
 # fc_nbs = [[32], [64]]
 # rnn_nbs = [[32, 32], [64, 64]]      # this is the way to encode 2 layers
 # fc_nbs = None
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more64_coded_inyaml'
-patch_lens = [50, 75, 100]   # to start in
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more64_coded_inyaml' # no está claro que ayuda mucho, quizá solo un poco
+# patch_lens = [50, 75, 100]   # to start in
 
 
 #
+# models = ['crnn_seld_tagger']
+# patch_lens = [50, 75, 100]   # to start in
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_withFORGOTTEN_BN' meterla no ayuda
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact' MAL
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s' MAL
+
+
+# from now on
+patch_lens = [50]
+mode_last_patch = 'fill'  # fill was found to be better!!
 models = ['crnn_seld_tagger']
-patch_lens = [50, 75, 100]   # to start in
-# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_withFORGOTTEN_BN'
+cnn_nb_filts = [64, 128]
+rnn_nbs = [[32], [64], [128]]
+dropout_rate = 0.5  # this was found to be VERY important. Always include
 
-# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact'
 
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s'
+# trying with the lr of Keras by default (same used by SA in SELD and SED
+lrs = [0.001]
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_lr0.001'
+
+# trying with other batchsizes. SA usees 128 in SED, 16 in SELD
+# batch_sizes = [64, 128]
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_batch_64_128'
 
 
 

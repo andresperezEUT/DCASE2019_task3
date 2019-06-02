@@ -9,7 +9,7 @@ ctrl:
   pipeline: T_F
   plot_figs: false
 extract:
-  audio_len_s: 1
+  audio_len_s: 2
   diff: false
   eps: 2.220446049250313e-16
   fmax: 18000
