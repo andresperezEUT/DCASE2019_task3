@@ -812,7 +812,8 @@ def get_model_crnn_seld_tagger(params_crnn=None, params_learn=None, params_extra
 
     # CNN
     for i, convCnt in enumerate(params_crnn.get('cnn_pool_size')):
-        spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=(3, 3), padding='same')(spec_cnn)
+        # spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=(3, 3), padding='same')(spec_cnn)
+        spec_cnn = Conv2D(filters=params_crnn.get('cnn_nb_filt'), kernel_size=params_crnn.get('cnn_nb_kernelsize'), padding='same')(spec_cnn)
         # after a Conv2D layer with data_format="channels_first", set axis=1
         # spec_cnn = BatchNormalization(axis=1)(spec_cnn), no aporta nada.
         spec_cnn = Activation('relu')(spec_cnn)
