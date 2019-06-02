@@ -39,11 +39,12 @@ def compute_DOA_metrics(ref_desc_files, pred_output_format_files):
     azi_list, ele_list = feat_cls.get_azi_ele_list()
 
     # collect reference files info
-    ref_files = os.listdir(ref_desc_files)
+    ref_files = [f for f in os.listdir(ref_desc_files) if not f.startswith('.')]
     nb_ref_files = len(ref_files)
 
     # collect predicted files info
-    pred_files = os.listdir(pred_output_format_files)
+    pred_files = [f for f in os.listdir(pred_output_format_files) if not f.startswith('.')]
+
     nb_pred_files = len(pred_files)
 
     # if nb_ref_files != nb_pred_files:
