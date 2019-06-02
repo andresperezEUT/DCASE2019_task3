@@ -93,7 +93,7 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 # batch_sizes = [64, 128]
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_batch_64_128'
 
-cnn_nb_kernelsizes = [(7, 7), (7, 7), (5, 3), (7, 3), (3, 5), (3, 7)]
+cnn_nb_kernelsizes = [(5, 5), (7, 7), (5, 3), (7, 3), (3, 5), (3, 7)]
 cnn_nb_filts = [128]
 rnn_nbs = [[64]]
 output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_kernelsizes_ok'
