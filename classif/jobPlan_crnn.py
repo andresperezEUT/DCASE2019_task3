@@ -96,7 +96,7 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 cnn_nb_kernelsizes = [(7, 7), (7, 7), (5, 3), (7, 3), (3, 5), (3, 7)]
 cnn_nb_filts = [128]
 rnn_nbs = [[64]]
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_kernelsizes'
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_kernelsizes_ok'
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
