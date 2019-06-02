@@ -69,58 +69,59 @@ print('                                              ')
 print('Folder path: ' + data_folder_path              )
 
 # Iterate over all audio files
-for audio_file_name in os.listdir(data_folder_path):
-    if audio_file_name != '.DS_Store': # Fucking OSX
+audio_files = [f for f in os.listdir(data_folder_path) if not f.startswith('.')]
 
-        # Open audio file
-        b_format, sr = sf.read(os.path.join(data_folder_path, audio_file_name))
+for audio_file_name in audio_files:
 
-        # Get associated metadata file
-        metadata_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    # Open audio file
+    b_format, sr = sf.read(os.path.join(data_folder_path, audio_file_name))
 
-        # This is our modified metadata result array
-        metadata_result_classif_array = []
+    # Get associated metadata file
+    metadata_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
 
-        # Iterate over the associated doa metadata file
-        with open(os.path.join(results_metadata_doa_folder, metadata_file_name), 'r') as f:
-            reader = csv.reader(f, delimiter=',')
-            for i, row in enumerate(reader):
-                # Discard the first line (just the column titles)
-                if i > 0:
-                    # Get values for this sound event
-                    sound_class_string = row[0]
-                    start_time_seconds = float(row[1])
-                    end_time_seconds = float(row[2])
-                    elevation = float(row[3])
-                    azimuth = float(row[4])
-                    distance = row[5]
+    # This is our modified metadata result array
+    metadata_result_classif_array = []
 
-                    # Slice the b_format audio to the corresponding event length
-                    start_frame = int(np.floor(start_time_seconds * sr))
-                    end_frame = int(np.ceil(end_time_seconds * sr))
+    # Iterate over the associated doa metadata file
+    with open(os.path.join(results_metadata_doa_folder, metadata_file_name), 'r') as f:
+        reader = csv.reader(f, delimiter=',')
+        for i, row in enumerate(reader):
+            # Discard the first line (just the column titles)
+            if i > 0:
+                # Get values for this sound event
+                sound_class_string = row[0]
+                start_time_seconds = float(row[1])
+                end_time_seconds = float(row[2])
+                elevation = float(row[3])
+                azimuth = float(row[4])
+                distance = row[5]
 
-                    # Steer a beam and estimate the source
-                    beamforming_method = 'basic'
-                    # You can try also with 'inphase', I would say there is not much difference in the non-overlapping case...
-                    sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation,
-                                                   beamforming_method)
+                # Slice the b_format audio to the corresponding event length
+                start_frame = int(np.floor(start_time_seconds * sr))
+                end_frame = int(np.ceil(end_time_seconds * sr))
 
-                    # Classify
-                    class_id = dummy_classifier(sound_event_mono)
+                # Steer a beam and estimate the source
+                beamforming_method = 'basic'
+                # You can try also with 'inphase', I would say there is not much difference in the non-overlapping case...
+                sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation,
+                                               beamforming_method)
 
-                    # Substitute the None for the current class, and append to the new metadata array
-                    row[0] = class_id
-                    metadata_result_classif_array.append(row)
+                # Classify
+                class_id = dummy_classifier(sound_event_mono)
 
-        # Write a new results_metadata_classif file with the modified classes
-        metadata_result_classif_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
-        path_to_write = os.path.join(results_metadata_classif_folder, metadata_result_classif_file_name)
-        write_metadata_result_file(metadata_result_classif_array, path_to_write)
+                # Substitute the None for the current class, and append to the new metadata array
+                row[0] = class_id
+                metadata_result_classif_array.append(row)
 
-        # Write a new result_output_classif file with the modified classes
-        output_result_classif_dict = build_result_dict_from_metadata_array(metadata_result_classif_array, params['required_window_hop'])
-        path_to_write = os.path.join(results_output_classif_folder, metadata_file_name)
-        write_output_result_file(output_result_classif_dict, path_to_write)
+    # Write a new results_metadata_classif file with the modified classes
+    metadata_result_classif_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    path_to_write = os.path.join(results_metadata_classif_folder, metadata_result_classif_file_name)
+    write_metadata_result_file(metadata_result_classif_array, path_to_write)
+
+    # Write a new result_output_classif file with the modified classes
+    output_result_classif_dict = build_result_dict_from_metadata_array(metadata_result_classif_array, params['required_window_hop'])
+    path_to_write = os.path.join(results_output_classif_folder, metadata_file_name)
+    write_output_result_file(output_result_classif_dict, path_to_write)
 
 
 print('-------------- PROCESSING FINISHED --------------')
