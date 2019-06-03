@@ -117,12 +117,15 @@ params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
                # 'featuredir_eval': 'audio_eval_varup1/',
                'featuredir_dev': 'audio_dev_varup2_64mel/',
                'featuredir_eval': 'audio_eval_varup2_64mel/',
+               # 'featuredir_dev': 'audio_dev_varup1_64mel/',
+               # 'featuredir_eval': 'audio_eval_varup1_64mel/',
                'path_to_dataset': path_root_data,
                'audiodir_dev': 'wav/dev/',
                'audiodir_eval': 'wav/eval/',
                'audio_shapedir_dev': 'audio_dev_shapes/',
                'audio_shapedir_eval': 'audio_eval_shapes/',
                'gt_files': path_root_data}
+
 
 if params_learn.get('mixup_log'):
     # we will be computing log of spectrograms on the fly for training (after mixup)

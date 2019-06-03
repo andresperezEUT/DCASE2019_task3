@@ -23,16 +23,17 @@ N = 5
 
 # params to try************************************
 # basic params by default
-lrs = [0.0001]
-batch_sizes = [100]
-mode_last_patch = 'fill'  # fill was found to be better!!
+# lr=0.001 in Adam this is the default
+# lrs = [0.0001]
+# batch_sizes = [100]
+# mode_last_patch = 'fill'  # fill was found to be better!!
 
 # explore the main params of the net, plus patch_len
-patch_lens = [25, 50, 75, 100]
-cnn_nb_filts = [64, 128]
-rnn_nbs = [[32], [64], [128]]
+# patch_lens = [25, 50, 75, 100]
+# cnn_nb_filts = [64, 128]
+# rnn_nbs = [[32], [64], [128]]
 # fc_nbs = [[16], [32], [64]]
-dropout_rate = 0.5  # this was found to be VERY important. Always include
+# dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 # output_file = 'crnn_seld_explore_net_params_NOdropout'
 # output_file = 'crnn_seld_explore_net_params_YESdropout'
@@ -54,10 +55,48 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head'
-output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
-models = ['crnn_seld_tagger']
-fc_nbs = [[32], [64]]
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more'
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_GRU_layer_more'
+# models = ['crnn_seld_tagger']
+# fc_nbs = [[32], [64]]
+# rnn_nbs = [[32, 32], [64, 64]]      # this is the way to encode 2 layers
+# fc_nbs = None
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more64_coded_inyaml' # no está claro que ayuda mucho, quizá solo un poco
+# patch_lens = [50, 75, 100]   # to start in
 
+
+#
+# models = ['crnn_seld_tagger']
+# patch_lens = [50, 75, 100]   # to start in
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_withFORGOTTEN_BN' meterla no ayuda
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_preact' MAL
+
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_audiovarup1s' MAL
+
+
+# June 2nd---------------------------------------------------------------------------------------------
+lrs = [0.0001]
+batch_sizes = [100]
+patch_lens = [50]
+mode_last_patch = 'fill'  # fill was found to be better!!
+models = ['crnn_seld_tagger']
+cnn_nb_filts = [64, 128]
+rnn_nbs = [[32], [64], [128]]
+dropout_rate = 0.5  # this was found to be VERY important. Always include
+
+# trying with the lr of Keras by default (same used by SA in SELD and SED
+# lrs = [0.001]
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_lr0.001'
+
+# trying with other batchsizes. SA usees 128 in SED, 16 in SELD
+# batch_sizes = [64, 128]
+# output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_batch_64_128'
+
+cnn_nb_kernelsizes = [(5, 5), (5, 3), (7, 3), (3, 5), (3, 7), (7, 7)]
+cnn_nb_filts = [128]
+rnn_nbs = [[64]]
+output_file = 'crnn_seld_explore_net_params_YESdropout_tagger_head_Dense_layer_more32_coded_inyaml_kernelsizes_oknow'
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
@@ -67,7 +106,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, cnn_nb_kernelsize):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -100,6 +139,7 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['crnn']['rnn_nb'] = rnn_nb
     # data['crnn']['fc_nb'] = fc_nb
     data['crnn']['dropout_rate'] = dropout_rate
+    data['crnn']['cnn_nb_kernelsize'] = cnn_nb_kernelsize
 
 
 
@@ -149,35 +189,37 @@ def main():
                         for batch_size in batch_sizes:
                             for cnn_nb_filt in cnn_nb_filts:
                                 for rnn_nb in rnn_nbs:
-                                    # for fc_nb in fc_nbs:
+                                    for cnn_nb_kernelsize in cnn_nb_kernelsizes:
+                                        # for fc_nb in fc_nbs:
 
-                                    count_trial += 1
+                                        count_trial += 1
 
-                                    change_yaml(yaml_file,
-                                                count_trial=count_trial,
-                                                output_file=output_file,
-                                                model=model,
-                                                loss=loss,
-                                                patch_len=patch_len,
-                                                lr=lr,
-                                                batch_size=batch_size,
-                                                cnn_nb_filt=cnn_nb_filt,
-                                                rnn_nb=rnn_nb,
-                                                )
+                                        change_yaml(yaml_file,
+                                                    count_trial=count_trial,
+                                                    output_file=output_file,
+                                                    model=model,
+                                                    loss=loss,
+                                                    patch_len=patch_len,
+                                                    lr=lr,
+                                                    batch_size=batch_size,
+                                                    cnn_nb_filt=cnn_nb_filt,
+                                                    rnn_nb=rnn_nb,
+                                                    cnn_nb_kernelsize=cnn_nb_kernelsize
+                                                    )
 
-                                    # call the job
-                                    str_exec = 'python classify.py -p ' + yaml_file
-                                    print(str_exec)
-                                    # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
+                                        # call the job
+                                        str_exec = 'python classify.py -p ' + yaml_file
+                                        print(str_exec)
+                                        # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
 
-                                    try:
-                                        retcode = subprocess.call(str_exec, shell=True)
-                                        if retcode < 0:
-                                            print("Child was terminated by signal", -retcode, file=sys.stderr)
-                                        else:
-                                            print("Child returned", retcode, file=sys.stderr)
-                                    except OSError as e:
-                                        print("Execution failed:", e, file=sys.stderr)
+                                        try:
+                                            retcode = subprocess.call(str_exec, shell=True)
+                                            if retcode < 0:
+                                                print("Child was terminated by signal", -retcode, file=sys.stderr)
+                                            else:
+                                                print("Child returned", retcode, file=sys.stderr)
+                                        except OSError as e:
+                                            print("Execution failed:", e, file=sys.stderr)
 
     end = time.time()
 

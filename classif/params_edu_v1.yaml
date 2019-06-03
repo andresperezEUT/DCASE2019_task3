@@ -97,6 +97,7 @@ crnn:
   rnn_nb: [32]
   fc_nb: [32]
   dropout_rate: 0.5
+  cnn_nb_kernelsize: (8, 2)
   # cnn_nb_filt = 128  # CNN filter size. originally 128, but in papers, from 8 to 128
   # cnn_pool_size = [5, 2, 2]  # Maxpooling across frequency. Length of cnn_pool_size =  number of CNN layers
   # rnn_nb = [32, 32]  # Number of RNN nodes.  Length of rnn_nb =  number of RNN layers
