@@ -55,8 +55,8 @@ def compute_DOA_metrics(ref_desc_files, pred_output_format_files):
     eval = evaluation_metrics.SELDMetrics(nb_frames_1s=feat_cls.nb_frames_1s(), data_gen=feat_cls)
 
     # Calculate scores for different splits, overlapping sound events, and impulse responses (reverberant scenes)
-    # score_type_list = [ 'all', 'split', 'ov', 'ir']
-    score_type_list = ['all']
+    score_type_list = [ 'all', 'split', 'ov', 'ir']
+    # score_type_list = ['all']
 
     print('\nCalculating {} scores for {}'.format(score_type_list, os.path.basename(pred_output_format_files)))
 

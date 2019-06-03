@@ -105,6 +105,6 @@ compute_DOA_metrics(gt_folder, output_result_doa_folder_path)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 print('-------------- VISUALIZE OUTPUT --------------')
-visualize_output(output_result_doa_folder_path, gt_folder, data_folder_path, params)
+# visualize_output(output_result_doa_folder_path, gt_folder, data_folder_path, params)
 
 
