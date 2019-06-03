@@ -16,7 +16,7 @@ def discard_nans(array):
     return array[~np.isnan(array)]
 
 def rad2deg(rad):
-    return rad*360/(2*np.pi)
+    return rad*360./(2*np.pi)
 
 def deg2rad(deg):
     return deg*(2*np.pi)/360.
@@ -162,13 +162,22 @@ class HybridKmeans_implementation:
         Compute great-circle distance around the sphere by the spherical law of cosines
         For more info, check https://en.wikipedia.org/wiki/Great-circle_distance
 
+        This implementation is coped from /evaluation_metrics/distance_between_spherical_coordinates_rad
         :param p1: [azi, ele] in radians
         :param p2: [azi, ele] in radians
-        :return: spherical distance
+        :return: spherical distance in radians
         """
-        #TODO: HOLD WARNINGS FOR THE CASE OF K*PI/2
-        d = np.arccos((np.sin(p1[1]) * np.sin(p2[1])) + (np.cos(p1[1]) * np.cos(p2[1]) * np.cos(p2[0] - p1[0])))
-        return d
+
+        dist = np.sin(p1[1]) * np.sin(p2[1]) + np.cos(p1[1]) * np.cos(p2[1]) * np.cos(np.abs(p1[0] - p2[0]))
+        # Making sure the dist values are in -1 to 1 range, else np.arccos kills the job
+        dist = np.clip(dist, -1, 1)
+        dist = np.arccos(dist)
+        return dist
+
+        return dist
+
+        # d = np.arccos((np.sin(p1[1]) * np.sin(p2[1])) + (np.cos(p1[1]) * np.cos(p2[1]) * np.cos(p2[0] - p1[0])))
+        # return d
 
     def initialize_centroids(self, points):
         """returns k centroids from the initial points"""
