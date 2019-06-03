@@ -41,6 +41,8 @@ def get_params(preset_string=None):
         required_window_hop = 0.02,
         kmeans_rate_th = 20,
 
+        frame_offset = [0,0],
+
         max_angular_distance_within_event = 20, # in degrees
         max_frame_distance_within_event = 20, # in frames
         min_num_frames_per_event = 10, # 200 ms at 20ms hop size
@@ -117,18 +119,18 @@ def get_params(preset_string=None):
     elif preset_string == '7':
         params['preset_string'] = preset_string
         params['doa_method'] = 'doa_method_variance'
-        params['directivity_th'] = 0.95
+        params['directivity_th'] = 0.75
         params['r'] = 2
         params['num_min_valid_bins'] = 10
         params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.95
+        params['doa_std_th'] = 0.75
         params['kmeans_rate_th'] = 1
         params['doa_median_average_nan_th'] = 0.9
         params['plot'] = True
         params['quick_test'] = True
         params['fmin'] = 0
         params['fmax'] = 15000
-        params['quick_test_file_duration'] = 5 # in seconds'
+        params['quick_test_file_duration'] = 5  # in seconds'
         params['min_std_overlapping'] = 30
 
     elif preset_string == '8':
@@ -141,7 +143,7 @@ def get_params(preset_string=None):
         params['doa_std_th'] = 0.75
         params['kmeans_rate_th'] = 1
         params['doa_median_average_nan_th'] = 0.9
-        params['plot'] = True
+        params['plot'] = False
         params['quick_test'] = False
         params['fmin'] = 0
         params['fmax'] = 15000
