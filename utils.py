@@ -125,23 +125,16 @@ class HybridKMeans:
         self.plot_ = plot
 
     def fit(self, X):
-
-        # if k=1, just compute the mean...
-        if self.k_ == 1:
+        kmeans_list = []
+        inertias_list = []
+        for n in range(self.n_init_):
             kmeans = HybridKmeans_implementation(self.k_, self.delta_, self.max_iter_).run(X)
+            kmeans_list.append(kmeans)
+            inertias_list.append(kmeans.inertia_)
             if self.plot_:
-                kmeans.plot(X, title='0')
-            return kmeans
-        else:
-            kmeans_list = []
-            inertias_list = []
-            for n in range(self.n_init_):
-                kmeans = HybridKmeans_implementation(self.k_, self.delta_, self.max_iter_).run(X)
-                kmeans_list.append(kmeans)
-                inertias_list.append(kmeans.inertia_)
-                if self.plot_:
-                    kmeans.plot(X, title=str(n))
-            return kmeans_list[int(np.argmin(np.asarray(inertias_list)))]
+                kmeans.plot(X, title=str(n))
+        # print(inertias_list)
+        return kmeans_list[int(np.argmin(np.asarray(inertias_list)))]
 
 
 
@@ -174,8 +167,6 @@ class HybridKmeans_implementation:
         dist = np.arccos(dist)
         return dist
 
-        return dist
-
         # d = np.arccos((np.sin(p1[1]) * np.sin(p2[1])) + (np.cos(p1[1]) * np.cos(p2[1]) * np.cos(p2[0] - p1[0])))
         # return d
 
@@ -184,6 +175,10 @@ class HybridKmeans_implementation:
         centroids = points.copy()
         np.random.shuffle(centroids)
         self.cluster_centers_ = centroids[:self.k_]
+        # Ensure that centroids are different
+        while np.allclose(self.cluster_centers_[0], self.cluster_centers_[1]):
+            np.random.shuffle(centroids)
+            self.cluster_centers_ = centroids[:self.k_]
 
     def closest_centroid(self, points):
         """returns an array containing the index to the nearest centroid for each point"""
@@ -205,10 +200,12 @@ class HybridKmeans_implementation:
         for k in range(self.cluster_centers_.shape[0]):
             points_in_cluster = points[self.closest_centers_ == k]
 
-            # TODO: CHANGE PERIODICITY HERE
             azi_mean = scipy.stats.circmean(points_in_cluster[:,0], high=np.pi, low=-np.pi)
             ele_mean = np.mean(points_in_cluster[:,1])
             centers[k] = [azi_mean,ele_mean]
+            # if np.isnan(azi_mean) or np.isnan(ele_mean):
+            #     print('isnan',azi_mean,ele_mean)
+            #     print(centers)
 
         self.cluster_centers_ = centers
 
@@ -225,8 +222,14 @@ class HybridKmeans_implementation:
 
 
     def run(self, X):
+
+        # Ensure not all the points are equal
+        if np.all(np.isclose(X[:,0], X[0,0])) and np.all(np.isclose(X[:,1], X[0,1])):
+            raise RuntimeWarning('KMeans: all X values are equal!')
+
         last_inertia = self.inertia_*3 # Whatever number to ensure first entry in the while loop
         self.initialize_centroids(X)
+
         while np.abs(last_inertia - self.inertia_) > self.delta_:
             if self.iter_ > self.max_iter_:
                 break

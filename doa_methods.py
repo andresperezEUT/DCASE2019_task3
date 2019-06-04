@@ -288,7 +288,7 @@ def fold_doa_into_results_vector(doa_th, sr, params, method='mean'):
 #         rate = kmeans1.inertia_ / kmeans2.inertia_
 #         # print(rate)
 #
-#         cluster_centers = kmeans2.cluster_centers_ if rate > params['kmeans_rate_th'] else kmeans1.cluster_centers_
+#         cluster_centers = kmeans2.cluster_centers_ if rate > params['doa_method_variancete_th'] else kmeans1.cluster_centers_
 #
 #         # Output values are expected in degrees
 #         for c in cluster_centers:
@@ -364,11 +364,26 @@ def group_sources_q_overlap(result_quantized, params):
         std_eles.append(np.std(eles))
         std_all.append(std_azis[-1]/2 + std_eles[-1])
 
+
+
         if std_all[-1] >= std_th:
+            # print(std_all[-1])
             # 2 clusters:
             x = deg2rad(np.asarray([azis, eles]).T)
-            kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+            # kmeans2 = HybridKmeans_implementation(k=2, max_iter=100).run(x)
+            try:
+                kmeans2 = HybridKMeans().fit(x)
+            except RuntimeWarning:
+                # All points in x are equal...
+                result_averaged_dict[frame] = [label, rad2deg(x[0,0]), rad2deg(x[0,1])]
+                continue
+
             result_averaged_dict[frame] = []
+
+            # print(kmeans2.cluster_centers_)
+            # print(kmeans2.inertia_)
+            # print(kmeans2.closest_centers_)
+
             for c in kmeans2.cluster_centers_:
                 # print(frame, azi, ele)
                 azi = rad2deg(c[0])
