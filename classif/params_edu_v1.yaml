@@ -35,7 +35,7 @@ extract:
   spectrogram_type: power
   win_length_samples: 1920
   window: hamming_asymmetric
-  mode_last_patch: discard     # discard
+  mode_last_patch: fill     # discard
 learn:
   alpha_mobilenet: 0.5
   LSR: false
@@ -62,8 +62,8 @@ learn:
   mode_class_weight: false
   model: debug
   n_classes: 11
-  n_epochs: 100
-#  n_epochs: 1      # debug
+#  n_epochs: 100
+  n_epochs: 1      # debug
   optim: Adam
   origin: useless
   patience: 15

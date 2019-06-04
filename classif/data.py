@@ -724,6 +724,7 @@ class PatchGeneratorPerFile(object):
         self.suffix_in = suffix_in
         self.patch_len = int(params_extract.get('patch_len'))
         self.patch_hop = int(params_extract.get('patch_hop'))
+        self.mode_last_patch = params_extract.get('mode_last_patch')
 
         # Given a directory with precomputed features in files:
         # - create the variable self.features with all the TF patches of all the files in the feature_dir
@@ -747,11 +748,26 @@ class PatchGeneratorPerFile(object):
 
     def get_num_instances_per_file(self, f_name):
         """
-        Return the number of context_windows or instances generated out of a given file
+        Return the number of context_windows, patches, or instances generated out of a given file
         """
         shape = utils_classif.get_shape(os.path.join(f_name.replace('.data', '.shape')))
         file_frames = float(shape[0])
-        return np.maximum(1, int(np.ceil((file_frames - self.patch_len) / self.patch_hop)))
+        if self.mode_last_patch == 'discard':
+            # the last patch that is always incomplete is discarded
+            if self.patch_len == 25 and self.patch_hop == 13 and file_frames == 51:
+                num_instances_per_file = 3
+            else:
+                num_instances_per_file = np.maximum(1, int(np.ceil((file_frames - self.patch_len - 1) / self.patch_hop)))
+
+        elif self.mode_last_patch == 'fill':
+            # the last patch that is always incomplete will be filled with zeros or signal, to avoid discarding signal
+            # hence we count one more patch
+            if self.patch_len == 25 and self.patch_hop == 13 and file_frames == 51:
+                num_instances_per_file = 3
+            else:
+                num_instances_per_file = np.maximum(1, 1 + int(np.ceil((file_frames - self.patch_len - 1) / self.patch_hop)))
+
+        return num_instances_per_file
 
     def get_feature_size_per_file(self, f_name):
         """
@@ -803,18 +819,36 @@ class PatchGeneratorPerFile(object):
     def fetch_file_2_tensor(self, f_id):
         # for a file specified by id,
         # perform slicing into T-F patches, and store them in tensor self.features
+
         mel_spec = utils_classif.load_tensor(in_path=os.path.join(self.feature_dir, self.file_list[f_id]))
 
         # indexes to store patches in self.features, according to the nb of instances from the file
-        idx_start = self.nb_inst_cum[f_id]  # start for a given file
-        idx_end = self.nb_inst_cum[f_id + 1]  # end for a given file
+        # (previously defined in get_num_instances_per_file)
+        idx_start = self.nb_inst_cum[f_id]      # start for a given file
+        idx_end = self.nb_inst_cum[f_id + 1]    # end for a given file
 
         # slicing + storing in self.features
         # copy each TF patch of size (context_window_frames,feature_size) in self.features
         idx = 0  # to index the different patches of f_id within self.features
         start = 0  # starting frame within f_id for each T-F patch
         while idx < (idx_end - idx_start):
-            self.features[idx_start + idx] = mel_spec[start: start + self.patch_len]
+
+            if idx == (idx_end - idx_start) - 1 and self.mode_last_patch == 'fill':
+                # last patch and want to fill the incomplete patch
+                tmp = mel_spec[start: start + self.patch_len]
+                # I could leave it like this, since the rest are initialized to zeros,
+                # but since I'm going to scale the features, artificial values are not cool.
+                # So I fill it with the begining of the TF representation (circular shift)
+                # watch: if the clip has 51 frames (extended to 1 second), in get_num_instances_per_file we allocated one patch
+                # hence the 50 first frames is the last patch, so we get here, but tmp at this point has 50x128
+                # so next line does nothing
+                tmp = np.vstack((tmp, mel_spec[0: self.patch_len - tmp.shape[0]]))
+                self.features[idx_start + idx] = tmp
+
+            else:
+                # rest of the cases
+                self.features[idx_start + idx] = mel_spec[start: start + self.patch_len]
+
             # update indexes
             start += self.patch_hop
             idx += 1
@@ -832,9 +866,6 @@ class PatchGeneratorPerFile(object):
         # (nb_patches_per_file, 1, time, freq)
         features = self.features[self.nb_inst_cum[self.current_f_idx-1]: self.nb_inst_cum[self.current_f_idx], np.newaxis]
         return features
-
-
-
 
 
 

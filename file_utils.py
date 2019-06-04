@@ -18,7 +18,11 @@ def write_output_result_file(output_result_dict, path_to_write):
 
     # Ensure ascending order
     frames = output_result_dict.keys()
-    frames.sort()
+    try:
+        frames.sort()
+    except:
+        # python3
+        sorted(frames)
 
     _fid = open(path_to_write, 'w')
     for _frame_ind in frames:

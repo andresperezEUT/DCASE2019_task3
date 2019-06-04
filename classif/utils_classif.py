@@ -132,6 +132,8 @@ def save_learning_curves(params_ctrl=None, history=None):
     """
     path_pics = make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
     fig_name = params_ctrl.get('output_file') + '_v' + str(params_ctrl.get('count_trial'))
+    if params_ctrl.get('current_fold'):
+        fig_name = fig_name + '_f' + str(params_ctrl.get('current_fold'))
 
     if isinstance(history, dict):
         # I passed the dict directly
@@ -141,7 +143,7 @@ def save_learning_curves(params_ctrl=None, history=None):
         plt.figure()
         plt.plot(history['acc'], "b.-")
         plt.plot(history['val_acc'], "g.-")
-        plt.axis([-2, 101, 0.15, 0.95])
+        plt.axis([-2, 101, 0.15, 0.1])
         plt.title('learning curves - accuracy')
         plt.ylabel('accuracy [%]')
         plt.xlabel('epoch')
@@ -234,6 +236,8 @@ def save_history(params_ctrl=None, history=None):
 
     path_pics = make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
     fig_name = params_ctrl.get('output_file') + '_v' + str(params_ctrl.get('count_trial'))
+    if params_ctrl.get('current_fold'):
+        fig_name = fig_name + '_f' + str(params_ctrl.get('current_fold'))
 
     history_filename = os.path.join(path_pics, fig_name + '.pickle')
     pickle.dump(history, open(history_filename, "wb"))
