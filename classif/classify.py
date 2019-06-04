@@ -1083,6 +1083,8 @@ print('====================Starting metrics for challenge with IDEAL frontend===
 results_metadata_doa_folder = os.path.join('.' + params['metadata_result_folder_path'],
                                            'metadata_dev',
                                            doa_folder)
+if not os.path.exists(results_metadata_doa_folder):
+    os.mkdir(results_metadata_doa_folder)
 
 # Path to results_metadata folder _before classification_; create it if necessary
 results_metadata_classif_folder = os.path.join('.' + params['metadata_result_folder_path'],

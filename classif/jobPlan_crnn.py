@@ -126,6 +126,21 @@ n_mels = [64]
 # n_mels = [40, 64, 96, 128]
 
 
+# ************************************************************************************ mixup
+mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
+mixup_mode = 'intra'
+mixup_log = False
+mixup_clamp = False
+
+# enable_mixup_warmup = 0  FIX    # this to 0 means enable warmup, pero mira waspaa19
+
+# mixup_warmup_epochs = [5, 10]
+# mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2]
+# output_file = 'FSDnoisy18k_js_tidy_noisy_mixup_warmup_intra03_warmup10_refine'
+# mixup_alphas = [0.3]
+# mixup_warmup_epochs = [10]
+
+
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.5, 0.6]
@@ -194,6 +209,15 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['mixup_log'] = False
     data['learn']['mixup_clamp'] = False
     data['learn']['mixup_warmup_epochs'] = False
+
+    # watch 1 stage mixup*********************** this is the good one
+    # data['learn']['mixup'] = True                    # True False
+    # data['learn']['mixup_mode'] = mixup_mode
+    # # data['learn']['mixup_alpha'] = mixup_alpha
+    # data['learn']['mixup_log'] = mixup_log
+    # data['learn']['mixup_clamp'] = mixup_clamp
+    # # data['learn']['mixup_warmup_epochs'] = mixup_warmup_epoch
+
 
     data['learn']['early_stop'] = 'val_acc'        # True False
 
