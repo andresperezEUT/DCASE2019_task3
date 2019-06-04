@@ -117,6 +117,7 @@ n_mels = [64]
 # rnn_nbs = [[64]]
 # fc_nbs = [[32]]
 # output_file = 'crnn_seld_explore_net_tagger_BETA'
+n_mels = [64]
 
 # ===============================================================
 # output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'

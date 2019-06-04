@@ -1067,7 +1067,7 @@ for audio_file_name in audio_files:
     write_output_result_file(output_result_classif_dict, path_to_write)
 
 
-print('-------------- COMPUTE DOA METRICS --------------')
+print('-------------- COMPUTE DOA METRICS REAL--------------')
 gt_folder = os.path.join(dataset_dir, 'metadata_'+params['mode'])
 compute_DOA_metrics(gt_folder, results_output_classif_folder)
 #
@@ -1213,7 +1213,7 @@ for audio_file_name in audio_files:
     write_output_result_file(output_result_classif_dict, path_to_write)
 
 
-print('-------------- COMPUTE DOA METRICS --------------')
+print('-------------- COMPUTE DOA METRICS IDEAL--------------')
 gt_folder = os.path.join(dataset_dir, 'metadata_'+params['mode'])
 compute_DOA_metrics(gt_folder, results_output_classif_folder)
 
