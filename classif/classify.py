@@ -127,8 +127,8 @@ params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
                # 'featuredir_eval': 'audio_eval_varup1/',
                'featuredir_dev': 'audio_dev_varup2_64mel/',
                'featuredir_eval': 'audio_eval_varup2_64mel/',
-               'featuredir_dev_param': 'audio_dev_param_varup2_64mel',
-               'featuredir_eval_param': 'audio_eval_param_varup2_64mel',
+               'featuredir_dev_param': 'audio_dev_param_varup2_64mel/',
+               'featuredir_eval_param': 'audio_eval_param_varup2_64mel/',
                # 'featuredir_dev': 'audio_dev_varup1_64mel/',
                # 'featuredir_eval': 'audio_eval_varup1_64mel/',
                'path_to_dataset': path_root_data,
@@ -141,6 +141,23 @@ params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
                'audio_shapedir_dev_param': 'audio_dev_param_shapes/',
                'audio_shapedir_eval_param': 'audio_eval_param_shapes/',
                'gt_files': path_root_data}
+
+
+if params_extract.get('n_mels') == 40:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_40mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_40mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_40mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_40mel/'
+elif params_extract.get('n_mels') == 96:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_96mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_96mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_96mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_96mel/'
+elif params_extract.get('n_mels') == 128:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_128mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_128mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_128mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_128mel/'
 
 
 if params_learn.get('mixup_log'):
@@ -246,7 +263,7 @@ int_to_label = {v: k for k, v in label_to_int.items()}
 # create ground truth mapping with categorical values
 file_to_label_numeric = {k: label_to_int[v] for k, v in file_to_label.items()}
 
-#
+
 #
 # ========================================================== FEATURE EXTRACTION
 # ========================================================== FEATURE EXTRACTION
@@ -475,7 +492,7 @@ labels_audio_dev = get_label_files(filelist=ff_list_dev,
 # sanity check
 print('Number of clips considered as dev set: {0}'.format(len(ff_list_dev)))
 print('Number of labels loaded for dev set: {0}'.format(len(labels_audio_dev)))
-
+scalers = [None]*4
 # vip determine the validation setup according to the folds, and perform training / val / test for each fold
 for kfo in range(1, 5):
 # for kfo in range(1, 2):
@@ -523,6 +540,8 @@ for kfo in range(1, 5):
                                       suffix_out='_label',
                                       floatx=np.float32
                                       )
+    # to predict later on on dev_param clips
+    scalers[kfo-1] = tr_gen_patch.scaler
 
     print("Total number of instances *only* for training: %s" % str(tr_gen_patch.nb_inst_total))
     print("Batch_size: %s" % str(tr_gen_patch.batch_size))
@@ -859,7 +878,7 @@ for kfo in range(1, 5):
         pred['label_int'] = new_pred_label_int
         pred.to_csv(params_files.get('predictions'), index=False)
 
-    # deleter variables from past fold to free memory
+    # deleter variables from past fold to free memory.
     del tr_gen_patch
     del val_gen_patch
     # this model was trained on split X, and no need anymore
@@ -888,8 +907,9 @@ print('\nTime elapsed for the job: %7.2f hours' % ((end - start) / 3600.0))
 print('\n====================================================================================================\n')
 
 
-print('\n====================Starting metrics for challenge with REAL frontend=====================================\n')
-print('\n====================Starting metrics for challenge with REAL frontend=====================================\n')
+print('\n====================Starting metrics for challenge with REAL frontend=====================================')
+print('====================Starting metrics for challenge with REAL frontend=====================================')
+print('====================Starting metrics for challenge with REAL frontend=====================================\n')
 
 data_folder_path = '../data/foa_dev/'
 # Iterate over all audio files from the dev set, some are from split 1234
@@ -990,13 +1010,16 @@ for audio_file_name in audio_files:
                 # only the file under question currently
                 ff_list_dev_param = [filename.replace('.wav', suffix_in + '.data')]
 
+                # grab scaler from the four I saved in x-val
+                current_scaler = scalers[curent_split - 1]
+
                 # vip: we are in REAL conditions, hence the dataset is 'dev_param' (and not dev). Watch path
                 te_param_gen_patch = PatchGeneratorPerFile(feature_dir=params_path.get('featurepath_dev_param'),
                                                            file_list=ff_list_dev_param,
                                                            params_extract=params_extract,
                                                            suffix_in='_mel',
                                                            floatx=np.float32,
-                                                           scaler=tr_gen_patch.scaler
+                                                           scaler=current_scaler
                                                            )
 
                 # return all patches for a sound file, every time get_patches_file() is called, file index is increased
@@ -1050,7 +1073,9 @@ compute_DOA_metrics(gt_folder, results_output_classif_folder)
 #
 #
 #
-print('\n====================Starting metrics for challenge with IDEAL frontend=====================================\n')
+print('\n====================Starting metrics for challenge with IDEAL frontend=====================================')
+print('====================Starting metrics for challenge with IDEAL frontend=====================================')
+print('====================Starting metrics for challenge with IDEAL frontend=====================================')
 print('====================Starting metrics for challenge with IDEAL frontend=====================================\n')
 
 
@@ -1129,13 +1154,16 @@ for audio_file_name in audio_files:
                 # only the file under question currently
                 ff_list_dev_ideal = [filename.replace('.wav', suffix_in + '.data')]
 
+                # grab scaler from the four I saved in x-val
+                current_scaler = scalers[curent_split - 1]
+
                 # vip: we are in ideal conditions, hence the dataset is 'dev' (and not dev_param). Watch path
                 te_idal_gen_patch = PatchGeneratorPerFile(feature_dir=params_path.get('featurepath_dev'),
                                                            file_list=ff_list_dev_ideal,
                                                            params_extract=params_extract,
                                                            suffix_in='_mel',
                                                            floatx=np.float32,
-                                                           scaler=tr_gen_patch.scaler
+                                                           scaler=current_scaler
                                                            )
 
                 # return all patches for a sound file, every time get_patches_file() is called, file index is increased

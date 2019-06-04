@@ -77,7 +77,7 @@ N = 5
 
 # June 2nd---------------------------------------------------------------------------------------------
 # lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
-# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture ALPHA
+# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
 batch_sizes = [100]
 patch_lens = [50]
 mode_last_patch = 'fill'  # fill was found to be better!!
@@ -108,7 +108,22 @@ cnn_nb_filts = [128]
 rnn_nbs = [[64]]
 fc_nbs = [[32]]
 output_file = 'crnn_seld_explore_net_tagger_ALPHA'
+n_mels = [64]
 
+
+# ===================================================archi BETA, with lrs = [0.001]
+# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+# cnn_nb_filts = [64]
+# rnn_nbs = [[64]]
+# fc_nbs = [[32]]
+# output_file = 'crnn_seld_explore_net_tagger_BETA'
+
+# ===============================================================
+# output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'
+# n_mels = [40, 64, 96, 128]
+
+# output_file = 'crnn_seld_explore_net_tagger_BETA_nmels'
+# n_mels = [40, 64, 96, 128]
 
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
@@ -119,7 +134,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -146,6 +161,7 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['batch_size'] = batch_size
     data['extract']['patch_len'] = patch_len
     data['extract']['mode_last_patch'] = mode_last_patch
+    data['extract']['n_mels'] = n_mel
 
     # watch CRNN
     data['crnn']['cnn_nb_filt'] = cnn_nb_filt
@@ -200,8 +216,8 @@ def main():
                         for batch_size in batch_sizes:
                             for cnn_nb_filt in cnn_nb_filts:
                                 for rnn_nb in rnn_nbs:
-                                    for cnn_nb_kernelsize in [3]:
-                                        for fc_nb in fc_nbs:
+                                    for fc_nb in fc_nbs:
+                                        for n_mel in n_mels:
 
                                             count_trial += 1
 
@@ -215,7 +231,8 @@ def main():
                                                         batch_size=batch_size,
                                                         cnn_nb_filt=cnn_nb_filt,
                                                         rnn_nb=rnn_nb,
-                                                        fc_nb=fc_nb
+                                                        fc_nb=fc_nb,
+                                                        n_mel=n_mel
                                                         )
 
                                             # call the job
