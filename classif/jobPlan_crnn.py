@@ -103,25 +103,25 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # ===================================================archi  ALPHA, with lrs = [0.0001]
-# lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
-# cnn_nb_filts = [128]
-# rnn_nbs = [[64]]
-# fc_nbs = [[32]]
+lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
+cnn_nb_filts = [128]
+rnn_nbs = [[64]]
+fc_nbs = [[32]]
 # output_file = 'crnn_seld_explore_net_tagger_ALPHA'
 # n_mels = [64]
 
 
 # ===================================================archi BETA, with lrs = [0.001]
-lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
-cnn_nb_filts = [64]
-rnn_nbs = [[64]]
-fc_nbs = [[32]]
-output_file = 'crnn_seld_explore_net_tagger_BETA'
-n_mels = [64]
+# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+# cnn_nb_filts = [64]
+# rnn_nbs = [[64]]
+# fc_nbs = [[32]]
+# output_file = 'crnn_seld_explore_net_tagger_BETA'
+# n_mels = [64]
 
 # ===============================================================
-# output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'
-# n_mels = [40, 64, 96, 128]
+output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'
+n_mels = [40, 64, 96, 128]
 
 # output_file = 'crnn_seld_explore_net_tagger_BETA_nmels'
 # n_mels = [40, 64, 96, 128]
