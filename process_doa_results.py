@@ -8,7 +8,7 @@ import csv
 import numpy as np
 from utils import beamforming, dummy_classifier
 from visualize_output import visualize_output
-
+import pandas as pd
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Path stuff
@@ -71,6 +71,13 @@ print('Folder path: ' + data_folder_path              )
 # Iterate over all audio files
 audio_files = [f for f in os.listdir(data_folder_path) if not f.startswith('.')]
 
+# store ground truth info for classification
+files =[]
+labels = []
+splits = []
+irs = []
+parents = []
+
 for audio_file_name in audio_files:
 
     # Open audio file
@@ -106,7 +113,18 @@ for audio_file_name in audio_files:
                 sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation,
                                                beamforming_method)
 
-                # Classify
+                filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                sf.write('data/mono_data/wav/dev_param/' + filename, sound_event_mono, sr)
+
+                # create csv with split info for development and test based on parametric frontend
+                files.append(filename)
+                labels.append(sound_class_string)
+                splits.append(int(metadata_file_name.split('_')[0][-1]))
+                irs.append(int(metadata_file_name.split('_')[1][-1]))
+                parents.append(metadata_file_name)
+
+                # vip Classify: this will need 4 models for 4 test splits in x-val in development mode
+                # PLUS one model for evaluation mode
                 class_id = dummy_classifier(sound_event_mono)
 
                 # Substitute the None for the current class, and append to the new metadata array
@@ -122,6 +140,16 @@ for audio_file_name in audio_files:
     output_result_classif_dict = build_result_dict_from_metadata_array(metadata_result_classif_array, params['required_window_hop'])
     path_to_write = os.path.join(results_output_classif_folder, metadata_file_name)
     write_output_result_file(output_result_classif_dict, path_to_write)
+
+
+# save dataset_dev_mono_parametric
+gt_classif = pd.DataFrame(files, columns=['fname'])
+gt_classif['label'] = labels
+gt_classif['split'] = splits
+gt_classif['ir'] = irs
+gt_classif['parent'] = parents
+gt_classif.to_csv('gt_dev_parametric_8.csv', index=False)
+print('EOF')
 
 
 print('-------------- PROCESSING FINISHED --------------')

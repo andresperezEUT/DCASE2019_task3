@@ -38,6 +38,16 @@ from losses import crossentropy_cochlear, crossentropy_diy_max, lq_loss, lq_loss
     crossentropy_diy_outlier_wrap, crossentropy_reed_wrap, crossentropy_diy_outlier_origin_wrap
 from mobilenet import mobilenet
 
+# andres-----------------------------------------
+# from parameters import get_params
+import csv
+import sys
+# wanna import functions from modules in the parent directory
+sys.path.append('../')
+from parameters import get_params
+from compute_doa_metrics import compute_DOA_metrics
+from file_utils import write_metadata_result_file, build_result_dict_from_metadata_array, write_output_result_file
+
 
 start = time.time()
 
@@ -117,14 +127,37 @@ params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
                # 'featuredir_eval': 'audio_eval_varup1/',
                'featuredir_dev': 'audio_dev_varup2_64mel/',
                'featuredir_eval': 'audio_eval_varup2_64mel/',
+               'featuredir_dev_param': 'audio_dev_param_varup2_64mel/',
+               'featuredir_eval_param': 'audio_eval_param_varup2_64mel/',
                # 'featuredir_dev': 'audio_dev_varup1_64mel/',
                # 'featuredir_eval': 'audio_eval_varup1_64mel/',
                'path_to_dataset': path_root_data,
                'audiodir_dev': 'wav/dev/',
                'audiodir_eval': 'wav/eval/',
+               'audiodir_dev_param': 'wav/dev_param/',
+               'audiodir_eval_param': 'wav/eval_param/',
                'audio_shapedir_dev': 'audio_dev_shapes/',
                'audio_shapedir_eval': 'audio_eval_shapes/',
+               'audio_shapedir_dev_param': 'audio_dev_param_shapes/',
+               'audio_shapedir_eval_param': 'audio_eval_param_shapes/',
                'gt_files': path_root_data}
+
+
+if params_extract.get('n_mels') == 40:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_40mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_40mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_40mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_40mel/'
+elif params_extract.get('n_mels') == 96:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_96mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_96mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_96mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_96mel/'
+elif params_extract.get('n_mels') == 128:
+    params_path['featuredir_dev'] = 'audio_dev_varup2_128mel/'
+    params_path['featuredir_eval'] = 'audio_eval_varup2_128mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_128mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_128mel/'
 
 
 if params_learn.get('mixup_log'):
@@ -137,14 +170,23 @@ if params_learn.get('mixup_log'):
 
 params_path['featurepath_dev'] = os.path.join(params_path.get('path_to_features'), params_path.get('featuredir_dev'))
 params_path['featurepath_eval'] = os.path.join(params_path.get('path_to_features'), params_path.get('featuredir_eval'))
+params_path['featurepath_dev_param'] = os.path.join(params_path.get('path_to_features'), params_path.get('featuredir_dev_param'))
+params_path['featurepath_eval_param'] = os.path.join(params_path.get('path_to_features'), params_path.get('featuredir_eval_param'))
 
 params_path['audiopath_dev'] = os.path.join(params_path.get('path_to_dataset'), params_path.get('audiodir_dev'))
 params_path['audiopath_eval'] = os.path.join(params_path.get('path_to_dataset'), params_path.get('audiodir_eval'))
+params_path['audiopath_dev_param'] = os.path.join(params_path.get('path_to_dataset'), params_path.get('audiodir_dev_param'))
+params_path['audiopath_eval_param'] = os.path.join(params_path.get('path_to_dataset'), params_path.get('audiodir_eval_param'))
+
 
 params_path['audio_shapedir_dev'] = os.path.join(params_path.get('path_to_dataset'),
                                                  params_path.get('audio_shapedir_dev'))
 params_path['audio_shapedir_eval'] = os.path.join(params_path.get('path_to_dataset'),
                                                  params_path.get('audio_shapedir_eval'))
+params_path['audio_shapedir_dev_param'] = os.path.join(params_path.get('path_to_dataset'),
+                                                 params_path.get('audio_shapedir_dev_param'))
+params_path['audio_shapedir_eval_param'] = os.path.join(params_path.get('path_to_dataset'),
+                                                 params_path.get('audio_shapedir_eval_param'))
 
 
 # ======================================================== SPECIFIC PATHS TO SOME IMPORTANT FILES
@@ -221,7 +263,7 @@ int_to_label = {v: k for k, v in label_to_int.items()}
 # create ground truth mapping with categorical values
 file_to_label_numeric = {k: label_to_int[v] for k, v in file_to_label.items()}
 
-#
+
 #
 # ========================================================== FEATURE EXTRACTION
 # ========================================================== FEATURE EXTRACTION
@@ -230,9 +272,14 @@ file_to_label_numeric = {k: label_to_int[v] for k, v in file_to_label.items()}
 # mel-spectrogram for all files in the dataset and store it
 var_lens = {item: [] for item in label_to_int.keys()}
 var_lens['overall'] = []
+
+var_lens_dev_param = {}
+var_lens_dev_param['overall'] = []
+
 if params_ctrl.get('feat_ext'):
     if params_ctrl.get('pipeline') == 'T_F':
         n_extracted_dev = 0; n_extracted_te = 0; n_failed_dev = 0; n_failed_te = 0
+        n_extracted_dev_param = 0; n_failed_dev_param = 0
 
         # only if features have not been extracted, ie
         # if folder does not exist, or it exists with less than 80% of the feature files
@@ -293,6 +340,72 @@ if params_ctrl.get('feat_ext'):
 
         else:
             print('Dev set is already extracted in {}'.format(params_path.get('featurepath_dev')))
+
+
+        # do feature extraction for dev_param (outcome of Andres approaches)
+        audio_files_dev_param = [f for f in os.listdir(params_path.get('audiopath_dev_param')) if not f.startswith('.')]
+
+        nb_files_dev_param = len(audio_files_dev_param)
+        if not os.path.exists(params_path.get('featurepath_dev_param')) or \
+                        len(os.listdir(params_path.get('featurepath_dev_param'))) < nb_files_dev_param * 0.8:
+
+            if os.path.exists(params_path.get('featurepath_dev_param')):
+                shutil.rmtree(params_path.get('featurepath_dev_param'))
+            os.makedirs(params_path.get('featurepath_dev_param'))
+
+            print(
+                '\nFeature extraction for dev set parametric (outcome of Andres). Features dumped in {}.........................'.
+                format(params_path.get('featurepath_dev_param')))
+            for idx, f_name in enumerate(audio_files_dev_param):
+                f_path = os.path.join(params_path.get('audiopath_dev_param'), f_name)
+                if os.path.isfile(f_path) and f_name.endswith('.wav'):
+                    # load entire audio file and modify variable length, if needed
+                    y = load_audio_file(f_path, input_fixed_length=params_extract['audio_len_samples'],
+                                        params_extract=params_extract)
+
+                    # keep record of the lengths, per class, for insight
+                    duration_seconds = len(y) / int(params_extract.get('fs'))
+                    var_lens_dev_param['overall'].append(duration_seconds)
+
+                    y = modify_file_variable_length(data=y,
+                                                    input_fixed_length=params_extract['audio_len_samples'],
+                                                    params_extract=params_extract)
+                    # print('Considered audio length: %6.3f' % (len(y) / params_extract.get('fs')))
+                    # print('%-22s: [%d/%d] of %s' % ('Extracting tr features', (idx + 1), nb_files_tr, f_path))
+
+                    # compute log-scaled mel spec. row x col = time x freq
+                    # this is done only for the length specified by loading mode (fix, varup, varfull)
+                    mel_spectrogram = get_mel_spectrogram(audio=y, params_extract=params_extract)
+
+                    # save the T_F rep to a binary file (only the considered length)
+                    utils_classif.save_tensor(var=mel_spectrogram,
+                                              out_path=os.path.join(params_path.get('featurepath_dev_param'),
+                                                                    f_name.replace('.wav', '.data')), suffix='_mel')
+
+                    # save also label. NO
+                    # utils_classif.save_tensor(var=np.array([file_to_label_numeric[f_path]], dtype=float),
+                    #                           out_path=os.path.join(params_path.get('featurepath_dev_param'),
+                    #                                                 f_name.replace('.wav', '.data')),
+                    #                           suffix='_label')
+
+                    if os.path.isfile(os.path.join(params_path.get('featurepath_dev_param'),
+                                                   f_name.replace('.wav', suffix_in + '.data'))):
+                        n_extracted_dev_param += 1
+                        print('%-22s: [%d/%d] of %s' % ('Extracted dev_param features', (idx + 1), nb_files_dev_param, f_path))
+                    else:
+                        n_failed_dev_param += 1
+                        print('%-22s: [%d/%d] of %s' % (
+                        'FAILING to extract dev_param features', (idx + 1), nb_files_dev_param, f_path))
+                else:
+                    print('%-22s: [%d/%d] of %s' % (
+                    'this dev_param audio is in the csv but not in the folder', (idx + 1), nb_files_dev_param, f_path))
+
+            print('n_extracted_dev_param: {0} / {1}'.format(n_extracted_dev_param, nb_files_dev_param))
+            print('n_failed_dev_param: {0} / {1}\n'.format(n_failed_dev_param, nb_files_dev_param))
+
+        else:
+            print('Dev_param set is already extracted in {}'.format(params_path.get('featurepath_dev_param')))
+
 
         # save dict with event durations, algo cambie aqui y lie los paths
         # path_pics = utils_classif.make_sure_isdir('logs/pics', params_ctrl.get('output_file'))
@@ -379,10 +492,10 @@ labels_audio_dev = get_label_files(filelist=ff_list_dev,
 # sanity check
 print('Number of clips considered as dev set: {0}'.format(len(ff_list_dev)))
 print('Number of labels loaded for dev set: {0}'.format(len(labels_audio_dev)))
-
+scalers = [None]*4
 # vip determine the validation setup according to the folds, and perform training / val / test for each fold
 for kfo in range(1, 5):
-# for kfo in range(1, 3):
+# for kfo in range(1, 2):
     print('\n=========================================================================================================')
     print('===Processing fold {} within the x-val setup...'.format(kfo))
     print('=========================================================================================================\n')
@@ -404,6 +517,7 @@ for kfo in range(1, 5):
         splits_val = [1]
         splits_te = [4]
 
+    params_ctrl['current_fold'] = kfo
     tr_files0 = [fname for idx, fname in enumerate(ff_list_dev) if splitlist_audio_dev[idx] == splits_tr[0]]
     tr_files1 = [fname for idx, fname in enumerate(ff_list_dev) if splitlist_audio_dev[idx] == splits_tr[1]]
     tr_files = tr_files0 + tr_files1
@@ -426,6 +540,8 @@ for kfo in range(1, 5):
                                       suffix_out='_label',
                                       floatx=np.float32
                                       )
+    # to predict later on on dev_param clips
+    scalers[kfo-1] = tr_gen_patch.scaler
 
     print("Total number of instances *only* for training: %s" % str(tr_gen_patch.nb_inst_total))
     print("Batch_size: %s" % str(tr_gen_patch.batch_size))
@@ -641,7 +757,12 @@ for kfo in range(1, 5):
             elif params_learn.get('early_stop') == "val_loss":
                 early_stop = EarlyStopping(monitor='val_loss', patience=params_learn.get('patience'), min_delta=0,
                                            verbose=1)
+
+            # vip save one best model for every fold, as I need this for submission
+            params_files['save_model'] = os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                                      str(params_ctrl.get('count_trial')) + '_f' + str(kfo) + '.h5')
             checkpoint = ModelCheckpoint(params_files.get('save_model'), monitor='val_acc', verbose=1, save_best_only=True)
+
             reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.5, patience=5, verbose=1)
             # min_delta is not supported by LRplateau?
             path_tb = 'logs/pics/tb/{}/v{}'.format(params_ctrl.get('output_file'), str(params_ctrl.get('count_trial')))
@@ -757,7 +878,7 @@ for kfo in range(1, 5):
         pred['label_int'] = new_pred_label_int
         pred.to_csv(params_files.get('predictions'), index=False)
 
-    # deleter variables from past fold to free memory
+    # deleter variables from past fold to free memory.
     del tr_gen_patch
     del val_gen_patch
     # this model was trained on split X, and no need anymore
@@ -780,8 +901,322 @@ evaluator.evaluate_acc_classwise()
 
 # evaluator.print_summary_eval()
 
-
 end = time.time()
-print('\n=============================Job finalized==========================================================\n')
+print('\n=============================Job finalized, but lacks DCASE metrics========================================\n')
 print('\nTime elapsed for the job: %7.2f hours' % ((end - start) / 3600.0))
 print('\n====================================================================================================\n')
+
+
+print('\n====================Starting metrics for challenge with REAL frontend=====================================')
+print('====================Starting metrics for challenge with REAL frontend=====================================')
+print('====================Starting metrics for challenge with REAL frontend=====================================\n')
+
+data_folder_path = '../data/foa_dev/'
+# Iterate over all audio files from the dev set, some are from split 1234
+audio_files = [f for f in os.listdir(data_folder_path) if not f.startswith('.')]
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Path stuff
+
+# This parameter will define the algorithm type
+preset_string = '8'
+
+# Default preset: contains path to folders
+params = get_params(preset_string)
+
+# Dataset type:
+dataset_type_folder = params['dataset'] + "_" + params['mode']
+dataset_preset_folder = dataset_type_folder + '_' + preset_string
+
+# Get folder names before and after classification
+doa_folder = params['before_classification_folder_name']
+classif_folder = params['after_classification_folder_name']
+
+# Path to audio folder
+dataset_dir = '../data'
+data_folder_path = os.path.join(dataset_dir, dataset_type_folder)
+
+# Path to results_metadata folder _before classification_; it should exist
+results_metadata_doa_folder = os.path.join('.' + params['metadata_result_folder_path'],
+                                           dataset_preset_folder,
+                                           doa_folder)
+
+# Path to results_metadata folder _before classification_; create it if necessary
+results_metadata_classif_folder = os.path.join('.' + params['metadata_result_folder_path'],
+                                               dataset_preset_folder,
+                                               classif_folder)
+if not os.path.exists(results_metadata_classif_folder):
+    os.mkdir(results_metadata_classif_folder)
+
+# Path to results_output folder _before classification_; it should exist
+results_output_doa_folder = os.path.join('.' + params['output_result_folder_path'],
+                                           dataset_preset_folder,
+                                           doa_folder)
+
+# Path to results_output folder _before classification_; create it if necessary
+results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
+                                               dataset_preset_folder,
+                                               classif_folder)
+if not os.path.exists(results_output_classif_folder):
+    os.mkdir(results_output_classif_folder)
+
+# vip load best model for every fold, as I need this for submission
+model_f1 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f1.h5'))
+model_f2 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f2.h5'))
+model_f3 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f3.h5'))
+model_f4 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f4.h5'))
+
+sr = 48000
+for audio_file_name in audio_files:
+    # always all the clips from the entire dataset (this is fixed)
+
+    # Get associated metadata file
+    metadata_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    # this csv contains the list of segmented events from the parent audio clip, in this case, segmented with the
+    # REAL info provided by andres frontend
+    # hence REAL conditions. vip WE need to use the path given by results_metadata_doa_folder defined above
+    # to get the correct file
+
+    # This is our modified metadata result array
+    metadata_result_classif_array = []
+
+    # Iterate over the associated doa metadata file
+    with open(os.path.join(results_metadata_doa_folder, metadata_file_name), 'r') as f:
+        reader = csv.reader(f, delimiter=',')
+        for i, row in enumerate(reader):
+            # Discard the first line (just the column titles)
+            if i > 0:
+                # Get values for this sound event
+                sound_class_string = row[0]
+                start_time_seconds = float(row[1])
+                end_time_seconds = float(row[2])
+
+                # Slice the b_format audio to the corresponding event length
+                start_frame = int(np.floor(start_time_seconds * sr))
+                end_frame = int(np.ceil(end_time_seconds * sr))
+
+                # from one event entry in the csv, to its corresponding audio clip filename (that I stored previously)
+                filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                curent_split = int(filename.split('_')[2][-1])
+
+                # vip Classify: this will need 4 models for 4 test splits in x-val in development mode + one model for evaluation mode
+                # to store prediction probabilites for one single test clip
+                te_preds = np.empty((1, params_learn.get('n_classes')))
+
+                # only the file under question currently
+                ff_list_dev_param = [filename.replace('.wav', suffix_in + '.data')]
+
+                # grab scaler from the four I saved in x-val
+                current_scaler = scalers[curent_split - 1]
+
+                # vip: we are in REAL conditions, hence the dataset is 'dev_param' (and not dev). Watch path
+                te_param_gen_patch = PatchGeneratorPerFile(feature_dir=params_path.get('featurepath_dev_param'),
+                                                           file_list=ff_list_dev_param,
+                                                           params_extract=params_extract,
+                                                           suffix_in='_mel',
+                                                           floatx=np.float32,
+                                                           scaler=current_scaler
+                                                           )
+
+                # return all patches for a sound file, every time get_patches_file() is called, file index is increased
+                patches_file = te_param_gen_patch.get_patches_file()
+                # ndarray with (nb_patches_per_file, 1, time, freq).
+                # this can be thought of as a batch (for evaluation), with all the patches from a sound file
+
+                # choose model accordingly
+                # predicting now on the T_F patch level (not on the wav clip-level)
+                if curent_split == 1:
+                    preds_patch_list = model_f1.predict(patches_file).tolist()
+                elif curent_split == 2:
+                    preds_patch_list = model_f2.predict(patches_file).tolist()
+                elif curent_split == 3:
+                    preds_patch_list = model_f3.predict(patches_file).tolist()
+                elif curent_split == 4:
+                    preds_patch_list = model_f4.predict(patches_file).tolist()
+
+                # softmax values, similar to probabilities, in a list of floats per patch
+                preds_patch = np.array(preds_patch_list)
+#
+                # aggregate softmax values across patches in order to produce predictions on the file/clip level
+                if params_learn.get('predict_agg') == 'amean':
+                    preds_file = np.mean(preds_patch, axis=0)
+                elif params_recog.get('aggregate') == 'gmean':
+                    preds_file = gmean(preds_patch, axis=0)
+                else:
+                    print('unkown aggregation method for prediction')
+                te_preds[0, :] = preds_file
+
+                # vip this is what I need to report [0: 10]
+                class_id = np.argmax(te_preds, axis=1)
+                # Substitute the None for the current class, and append to the new metadata array
+                row[0] = class_id
+                metadata_result_classif_array.append(row)
+#
+    # Write a new results_metadata_classif file with the modified classes
+    metadata_result_classif_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    path_to_write = os.path.join(results_metadata_classif_folder, metadata_result_classif_file_name)
+    write_metadata_result_file(metadata_result_classif_array, path_to_write)
+
+    # Write a new result_output_classif file with the modified classes
+    output_result_classif_dict = build_result_dict_from_metadata_array(metadata_result_classif_array, params['required_window_hop'])
+    path_to_write = os.path.join(results_output_classif_folder, metadata_file_name)
+    write_output_result_file(output_result_classif_dict, path_to_write)
+
+
+print('-------------- COMPUTE DOA METRICS REAL--------------')
+gt_folder = os.path.join(dataset_dir, 'metadata_'+params['mode'])
+compute_DOA_metrics(gt_folder, results_output_classif_folder)
+#
+#
+#
+print('\n====================Starting metrics for challenge with IDEAL frontend=====================================')
+print('====================Starting metrics for challenge with IDEAL frontend=====================================')
+print('====================Starting metrics for challenge with IDEAL frontend=====================================')
+print('====================Starting metrics for challenge with IDEAL frontend=====================================\n')
+
+
+# Path to results_metadata folder _before classification_; it should exist
+results_metadata_doa_folder = os.path.join('.' + params['metadata_result_folder_path'],
+                                           'metadata_dev',
+                                           doa_folder)
+if not os.path.exists(results_metadata_doa_folder):
+    os.mkdir(results_metadata_doa_folder)
+
+# Path to results_metadata folder _before classification_; create it if necessary
+results_metadata_classif_folder = os.path.join('.' + params['metadata_result_folder_path'],
+                                               'metadata_dev',
+                                               classif_folder)
+if not os.path.exists(results_metadata_classif_folder):
+    os.mkdir(results_metadata_classif_folder)
+
+# Path to results_output folder _before classification_; it should exist
+results_output_doa_folder = os.path.join('.' + params['output_result_folder_path'],
+                                         'metadata_dev',
+                                         doa_folder)
+if not os.path.exists(results_output_doa_folder):
+    os.mkdir(results_output_doa_folder)
+
+# Path to results_output folder _before classification_; create it if necessary
+results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
+                                             'metadata_dev',
+                                             classif_folder)
+if not os.path.exists(results_output_classif_folder):
+    os.mkdir(results_output_classif_folder)
+
+# vip load best model for every fold, as I need this for submission
+model_f1 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f1.h5'))
+model_f2 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f2.h5'))
+model_f3 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f3.h5'))
+model_f4 = load_model(os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                   str(params_ctrl.get('count_trial')) + '_f4.h5'))
+
+sr = 48000
+for audio_file_name in audio_files:
+    # always all the clips from the entire dataset (this is fixed)
+
+    # Get associated metadata file
+    metadata_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    # this csv contains the list of segmented events from the parent audio clip, in this case, segmented with the GT
+    # info, hence ideal conditions. vip WE need to use the path given by results_metadata_doa_folder defined above
+    # to get the correct file
+
+    # This is our modified metadata result array
+    metadata_result_classif_array = []
+
+    # Iterate over the associated doa metadata file
+    with open(os.path.join(results_metadata_doa_folder, metadata_file_name), 'r') as f:
+        reader = csv.reader(f, delimiter=',')
+        for i, row in enumerate(reader):
+            # Discard the first line (just the column titles)
+            if i > 0:
+                # Get values for this sound event
+                sound_class_string = row[0]
+                start_time_seconds = float(row[1])
+                end_time_seconds = float(row[2])
+
+                # Slice the b_format audio to the corresponding event length
+                start_frame = int(np.floor(start_time_seconds * sr))
+                end_frame = int(np.ceil(end_time_seconds * sr))
+
+                # from one event entry in the csv, to its corresponding audio clip filename (that I stored previously)
+                filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                curent_split = int(filename.split('_')[2][-1])
+
+                # vip Classify: this will need 4 models for 4 test splits in x-val in development mode + one model for evaluation mode
+                # to store prediction probabilites for one single test clip
+                te_preds = np.empty((1, params_learn.get('n_classes')))
+
+                # only the file under question currently
+                ff_list_dev_ideal = [filename.replace('.wav', suffix_in + '.data')]
+
+                # grab scaler from the four I saved in x-val
+                current_scaler = scalers[curent_split - 1]
+
+                # vip: we are in ideal conditions, hence the dataset is 'dev' (and not dev_param). Watch path
+                te_idal_gen_patch = PatchGeneratorPerFile(feature_dir=params_path.get('featurepath_dev'),
+                                                           file_list=ff_list_dev_ideal,
+                                                           params_extract=params_extract,
+                                                           suffix_in='_mel',
+                                                           floatx=np.float32,
+                                                           scaler=current_scaler
+                                                           )
+
+                # return all patches for a sound file, every time get_patches_file() is called, file index is increased
+                patches_file = te_idal_gen_patch.get_patches_file()
+                # ndarray with (nb_patches_per_file, 1, time, freq).
+                # this can be thought of as a batch (for evaluation), with all the patches from a sound file
+
+                # choose model accordingly
+                # predicting now on the T_F patch level (not on the wav clip-level)
+                if curent_split == 1:
+                    preds_patch_list = model_f1.predict(patches_file).tolist()
+                elif curent_split == 2:
+                    preds_patch_list = model_f2.predict(patches_file).tolist()
+                elif curent_split == 3:
+                    preds_patch_list = model_f3.predict(patches_file).tolist()
+                elif curent_split == 4:
+                    preds_patch_list = model_f4.predict(patches_file).tolist()
+
+                # softmax values, similar to probabilities, in a list of floats per patch
+                preds_patch = np.array(preds_patch_list)
+
+                # aggregate softmax values across patches in order to produce predictions on the file/clip level
+                if params_learn.get('predict_agg') == 'amean':
+                    preds_file = np.mean(preds_patch, axis=0)
+                elif params_recog.get('aggregate') == 'gmean':
+                    preds_file = gmean(preds_patch, axis=0)
+                else:
+                    print('unkown aggregation method for prediction')
+                te_preds[0, :] = preds_file
+
+                # vip this is what I need to report [0: 10]
+                class_id = np.argmax(te_preds, axis=1)
+                # Substitute the None for the current class, and append to the new metadata array
+                row[0] = class_id
+                metadata_result_classif_array.append(row)
+
+    # Write a new results_metadata_classif file with the modified classes
+    metadata_result_classif_file_name = os.path.splitext(audio_file_name)[0] + params['metadata_result_file_extension']
+    path_to_write = os.path.join(results_metadata_classif_folder, metadata_result_classif_file_name)
+    write_metadata_result_file(metadata_result_classif_array, path_to_write)
+
+    # Write a new result_output_classif file with the modified classes
+    output_result_classif_dict = build_result_dict_from_metadata_array(metadata_result_classif_array, params['required_window_hop'])
+    path_to_write = os.path.join(results_output_classif_folder, metadata_file_name)
+    write_output_result_file(output_result_classif_dict, path_to_write)
+
+
+print('-------------- COMPUTE DOA METRICS IDEAL--------------')
+gt_folder = os.path.join(dataset_dir, 'metadata_'+params['mode'])
+compute_DOA_metrics(gt_folder, results_output_classif_folder)
+
+print('\n=============================Job finalized for real==========================================================\n')
+print('====================================================================================================')
+print('====================================================================================================')
