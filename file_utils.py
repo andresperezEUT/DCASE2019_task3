@@ -97,17 +97,17 @@ def build_result_dict_from_metadata_array(metadata_result_array, hop_size):
             try:
                 # result_dict[frame].append([class_idx, azi, ele])
                 v = result_dict[frame]
-                result_dict[frame] = [v, [class_idx, azi, ele]]
+                if len(v) == 3:
+                    # Avoid ol3 situations
+                    result_dict[frame] = [v, [class_idx, azi, ele]]
             except KeyError:
+                # No event at that frame: add new
                 result_dict[frame] = [class_idx, azi, ele]
 
     return result_dict
 
 
-def assign_metadata_result_classes_from_groundtruth(metadata_file_name, rs_folder_path, gt_folder_path):
-
-    time_th = 1. # s
-    dist_th = 20. # m
+def assign_metadata_result_classes_from_groundtruth(metadata_file_name, rs_folder_path, gt_folder_path, time_th, dist_th):
 
     # Load files
     res_list = []
@@ -119,9 +119,6 @@ def assign_metadata_result_classes_from_groundtruth(metadata_file_name, rs_folde
     with open(os.path.join(gt_folder_path, metadata_file_name), 'r') as f:
         reader = csv.reader(f, delimiter=',')
         gt_list = list(reader)[1:]
-
-    # for later
-    # lasting_gt_list = copy(gt_list)
 
     # Find the event from gt which is parallel to the one in res
     res_dict = {}
