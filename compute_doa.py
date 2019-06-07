@@ -15,7 +15,7 @@ import time, datetime
 start_time = time.time()
 
 # SELECT THE PARAMETER PRESET HERE!
-preset = '9c_r10_mv510_sv5'
+preset = 'B'
 params = get_params(preset)
 
 # Get path to data to be processed
@@ -106,13 +106,15 @@ print('                                                 ')
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-print('-------------- COMPUTE DOA METRICS --------------')
-compute_DOA_metrics(gt_folder, output_result_doa_folder_path)
+if params['mode'] == 'dev':
+    print('-------------- COMPUTE DOA METRICS --------------')
+    compute_DOA_metrics(gt_folder, output_result_doa_folder_path)
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# print('-------------- VISUALIZE OUTPUT --------------')
-# visualize_output(output_result_doa_folder_path, gt_folder, data_folder_path, params)
+# if params['mode'] == 'dev':
+#     print('-------------- VISUALIZE OUTPUT --------------')
+#     visualize_output(output_result_doa_folder_path, gt_folder, data_folder_path, params)
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end_time = time.time()

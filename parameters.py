@@ -51,7 +51,7 @@ def get_params(preset_string=None):
         plot = False,
         ## test
         quick_test = False,
-        quick_test_file_duration = 0.75, # in seconds
+        quick_test_file_duration = 5, # in seconds
         ## overwrite files
         overwrite = False,
     )
@@ -133,7 +133,8 @@ def get_params(preset_string=None):
         params['overwrite'] = True
 
     ##### SENT #####
-    elif preset_string == '8':
+    # elif preset_string == '8':
+    elif preset_string == 'A':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.75
         params['r'] = 2
@@ -147,6 +148,24 @@ def get_params(preset_string=None):
         params['fmax'] = 15000
         params['quick_test_file_duration'] = 10  # in seconds'
         params['min_std_overlapping'] = 30
+        params['num_init_kmeans'] = 4
+
+    elif preset_string == 'A_eval':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.75
+        params['r'] = 2
+        params['num_min_valid_bins'] = 10
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.75
+        params['doa_median_average_nan_th'] = 0.9
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 30
+        params['num_init_kmeans'] = 4
+        params['mode'] = 'eval'
 
     elif preset_string == '8_r1':
         params['preset_string'] = preset_string
@@ -332,7 +351,8 @@ def get_params(preset_string=None):
 
 
         ##### SENT #####
-    elif preset_string == '9c_r10_mv510_sv5':
+    # elif preset_string == '9c_r10_mv510_sv5':
+    elif preset_string == 'B':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
         params['r'] = 10
@@ -351,11 +371,214 @@ def get_params(preset_string=None):
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [5,10]
         # params['std_doa_vicinity_radius'] = 3
-        ################################
+
+    elif preset_string == 'B_short':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 4
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [5, 10]
+
+    elif preset_string == 'B_short2':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [10, 10]
+        params['std_doa_vicinity_radius'] = 5
+
+    elif preset_string == 'B_short3':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [10, 10]
+        params['std_doa_vicinity_radius'] = 5
+
+    elif preset_string == 'B_short4':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+
+    elif preset_string == 'B_short4q':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+
+    elif preset_string == 'B_short4q_2':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
 
 
+    elif preset_string == 'B_short4q_2zzz':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 1
+
+
+    elif preset_string == 'B_short4q_2www':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 11
+
+    elif preset_string == 'B_short4_low':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 21
+
+    elif preset_string == 'B_short4_high':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = True
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 91
     ##### SENT #####
-    elif preset_string == '10':
+    # elif preset_string == '10':
+    elif preset_string == 'C':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
         params['r'] = 4
@@ -373,6 +596,72 @@ def get_params(preset_string=None):
         params['min_num_frames_per_event'] = 4
 
 
+
+    #### TODO PERFORM!!
+    elif preset_string == 'Q':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 11
+
+    elif preset_string == 'Q_eval':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 11
+        params['mode'] = 'eval'
+
+    ############ EVAL!!!!!!!!!
+
+    elif preset_string == 'B_eval':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 4
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [5,10]
+        params['mode'] = 'eval'
 
     # elif argv == '3':
     #     params['mode'] = 'eval'
