@@ -184,6 +184,9 @@ def get_params(preset_string=None):
         params['median_filter_vicinity_radius'] = [20, 20]
         params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 11
+
+
+
     elif preset_string == '8_r1':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.75
