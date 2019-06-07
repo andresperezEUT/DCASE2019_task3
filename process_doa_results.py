@@ -14,14 +14,14 @@ import pandas as pd
 # Path stuff
 
 # This parameter will define the algorithm type
-preset_string = '8'
+preset_string = 'A'
 
 # Default preset: contains path to folders
 params = get_params(preset_string)
 
 # Dataset type:
 dataset_type_folder = params['dataset'] + "_" + params['mode']
-dataset_preset_folder = dataset_type_folder + '_' + preset_string
+dataset_preset_folder = dataset_type_folder + '_' + params['preset_string']
 
 # Get folder names before and after classification
 doa_folder = params['before_classification_folder_name']
@@ -114,7 +114,13 @@ for audio_file_name in audio_files:
                                                beamforming_method)
 
                 filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
-                sf.write('data/mono_data/wav/dev_param/' + filename, sound_event_mono, sr)
+
+                # TODO 4EDU: aqui he cambiado para que escriba en 'data/mono_data/wav/dev_param'
+                # si eso es lo que hay que hacer en eval...
+                path_to_write = os.path.join('data/mono_data/wav', params['mode'] + '_param' )
+                if not os.path.exists(path_to_write):
+                    os.mkdir(path_to_write)
+                sf.write(os.path.join(path_to_write, filename), sound_event_mono, sr)
 
                 # create csv with split info for development and test based on parametric frontend
                 files.append(filename)
@@ -148,7 +154,12 @@ gt_classif['label'] = labels
 gt_classif['split'] = splits
 gt_classif['ir'] = irs
 gt_classif['parent'] = parents
-gt_classif.to_csv('gt_dev_parametric_8.csv', index=False)
+
+# gt_classif.to_csv('gt_dev_parametric_8.csv', index=False)
+# TODO 4EDU: cambiar esta linea por algo como:
+# gt_csv_file_name = 'gt_' + params['mode'] + '_parametric_' + params['preset_string'] + '.csv'
+# gt_classif.to_csv(gt_csv_file_name, index=False)
+
 print('EOF')
 
 
