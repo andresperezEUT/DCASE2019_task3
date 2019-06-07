@@ -66,74 +66,7 @@ def get_params(preset_string=None):
         params['plot'] = True
         params['quick_test'] = True
 
-    elif preset_string == '1':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.9
-        params['num_min_valid_bins'] = 1
-        params['plot'] = True
-        params['quick_test'] = True
-
-    elif preset_string == '2':
-        params['preset_string'] = preset_string
-
-    elif preset_string == '3':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.9
-
-    elif preset_string == '4':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.75
-        params['num_min_valid_bins'] = 5
-        params['doa_std_vicinity_radius'] = [5,2]
-        params['doa_std_th'] = 0.75
-        params['plot'] = False
-        params['quick_test'] = False
-
-    elif preset_string == '5':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.75
-        params['num_min_valid_bins'] = 5
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.75
-        params['plot'] = True
-        params['quick_test'] = True
-
-    elif preset_string == '6':
-        params['preset_string'] = preset_string
-        params['doa_method'] = 'doa_method_variance'
-        params['directivity_th'] = 0.95
-        params['r'] = 0
-        params['num_min_valid_bins'] = 10
-        params['doa_std_vicinity_radius'] = 10
-        params['doa_std_th'] = 0.5
-        params['doa_median_average_nan_th'] = 0.75
-        params['plot'] = True
-        params['quick_test'] = True
-        params['fmin'] = 0
-        params['fmax'] = 15000
-        params['quick_test_file_duration'] = 5 # in seconds'
-
-    ##############################
-
-    elif preset_string == '7':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.75
-        params['r'] = 2
-        params['num_min_valid_bins'] = 10
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.75
-        params['doa_median_average_nan_th'] = 0.9
-        params['plot'] = False
-        params['quick_test'] = False
-        params['fmin'] = 0
-        params['fmax'] = 15000
-        params['quick_test_file_duration'] = 10  # in seconds'
-        params['min_std_overlapping'] = 30
-        params['num_init_kmeans'] = 4
-        params['overwrite'] = True
-
-    ##### SENT #####
-    # elif preset_string == '8':
+    #####################################
     elif preset_string == 'A':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.75
@@ -151,7 +84,8 @@ def get_params(preset_string=None):
         params['num_init_kmeans'] = 4
 
     elif preset_string == 'A_eval':
-        params['preset_string'] = preset_string
+        params['mode'] = 'eval'
+        params['preset_string'] = 'A'
         params['directivity_th'] = 0.75
         params['r'] = 2
         params['num_min_valid_bins'] = 10
@@ -167,6 +101,89 @@ def get_params(preset_string=None):
         params['num_init_kmeans'] = 4
         params['mode'] = 'eval'
 
+    #####################################
+    elif preset_string == 'B':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 4
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [5,10]
+
+    elif preset_string == 'B_eval':
+        params['mode'] = 'eval'
+        params['preset_string'] = 'B'
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.75
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 15000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 20
+        params['min_num_frames_per_event'] = 4
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [5,10]
+
+    #####################################
+    elif preset_string == 'Q':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 11
+
+    elif preset_string == 'Q_eval':
+        params['mode'] = 'eval'
+        params['preset_string'] = 'Q'
+        params['directivity_th'] = 0.5
+        params['r'] = 10
+        params['num_min_valid_bins'] = 1
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.5
+        params['plot'] = False
+        params['quick_test'] = False
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['quick_test_file_duration'] = 10  # in seconds'
+        params['min_std_overlapping'] = 10
+        params['min_num_frames_per_event'] = 8
+        params['overwrite'] = True
+        params['num_init_kmeans'] = 4
+        params['median_filter_vicinity_radius'] = [20, 20]
+        params['std_doa_vicinity_radius'] = 5
+        params['energy_density_local_th_size'] = 11
     elif preset_string == '8_r1':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.75
@@ -182,6 +199,9 @@ def get_params(preset_string=None):
         params['quick_test_file_duration'] = 10  # in seconds'
         params['min_std_overlapping'] = 30
 
+
+    #####################################
+    # Some random trials...
     elif preset_string == '8_r4':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.75
@@ -196,8 +216,6 @@ def get_params(preset_string=None):
         params['fmax'] = 15000
         params['quick_test_file_duration'] = 10  # in seconds'
         params['min_std_overlapping'] = 30
-
-    ##############################
 
     elif preset_string == '9c':
         params['preset_string'] = preset_string
@@ -290,7 +308,6 @@ def get_params(preset_string=None):
         params['num_init_kmeans'] = 4
         # mv1 = 3, sv1 = 3
 
-        ################################
     elif preset_string == '9c_r10_mv1_sv1':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
@@ -347,29 +364,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = 5
-        # params['std_doa_vicinity_radius'] = 3
-
-
-        ##### SENT #####
-    # elif preset_string == '9c_r10_mv510_sv5':
-    elif preset_string == 'B':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.5
-        params['r'] = 10
-        params['num_min_valid_bins'] = 1
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.85
-        params['doa_median_average_nan_th'] = 0.75
-        params['plot'] = False
-        params['quick_test'] = False
-        params['fmin'] = 0
-        params['fmax'] = 15000
-        params['quick_test_file_duration'] = 10  # in seconds'
-        params['min_std_overlapping'] = 20
-        params['min_num_frames_per_event'] = 4
-        params['overwrite'] = True
-        params['num_init_kmeans'] = 4
-        params['median_filter_vicinity_radius'] = [5,10]
         # params['std_doa_vicinity_radius'] = 3
 
     elif preset_string == 'B_short':
@@ -576,8 +570,7 @@ def get_params(preset_string=None):
         params['median_filter_vicinity_radius'] = [20, 20]
         params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 91
-    ##### SENT #####
-    # elif preset_string == '10':
+
     elif preset_string == 'C':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
@@ -595,95 +588,9 @@ def get_params(preset_string=None):
         params['overwrite'] = False
         params['min_num_frames_per_event'] = 4
 
-
-
-    #### TODO PERFORM!!
-    elif preset_string == 'Q':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.5
-        params['r'] = 10
-        params['num_min_valid_bins'] = 1
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.85
-        params['doa_median_average_nan_th'] = 0.5
-        params['plot'] = False
-        params['quick_test'] = False
-        params['fmin'] = 0
-        params['fmax'] = 8000
-        params['quick_test_file_duration'] = 10  # in seconds'
-        params['min_std_overlapping'] = 10
-        params['min_num_frames_per_event'] = 8
-        params['overwrite'] = True
-        params['num_init_kmeans'] = 4
-        params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
-        params['energy_density_local_th_size'] = 11
-
-    elif preset_string == 'Q_eval':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.5
-        params['r'] = 10
-        params['num_min_valid_bins'] = 1
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.85
-        params['doa_median_average_nan_th'] = 0.5
-        params['plot'] = False
-        params['quick_test'] = False
-        params['fmin'] = 0
-        params['fmax'] = 8000
-        params['quick_test_file_duration'] = 10  # in seconds'
-        params['min_std_overlapping'] = 10
-        params['min_num_frames_per_event'] = 8
-        params['overwrite'] = True
-        params['num_init_kmeans'] = 4
-        params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
-        params['energy_density_local_th_size'] = 11
-        params['mode'] = 'eval'
-
-    ############ EVAL!!!!!!!!!
-
-    elif preset_string == 'B_eval':
-        params['preset_string'] = preset_string
-        params['directivity_th'] = 0.5
-        params['r'] = 10
-        params['num_min_valid_bins'] = 1
-        params['doa_std_vicinity_radius'] = 2
-        params['doa_std_th'] = 0.85
-        params['doa_median_average_nan_th'] = 0.75
-        params['plot'] = False
-        params['quick_test'] = False
-        params['fmin'] = 0
-        params['fmax'] = 15000
-        params['quick_test_file_duration'] = 10  # in seconds'
-        params['min_std_overlapping'] = 20
-        params['min_num_frames_per_event'] = 4
-        params['overwrite'] = True
-        params['num_init_kmeans'] = 4
-        params['median_filter_vicinity_radius'] = [5,10]
-        params['mode'] = 'eval'
-
-    # elif argv == '3':
-    #     params['mode'] = 'eval'
-    #     params['dataset'] = 'mic'
-    #
-    # elif argv == '4':
-    #     params['mode'] = 'dev'
-    #     params['dataset'] = 'foa'
-    #
-    # elif argv == '5':
-    #     params['mode'] = 'eval'
-    #     params['dataset'] = 'foa'
-    #
-    # # Quick test
-    # elif argv == '999':
-    #     print("QUICK TEST MODE\n")
-    #     params['quick_test'] = True
-    #     params['epochs_per_fit'] = 1
-    #
-    # else:
-    #     print('ERROR: unknown argument {}'.format(argv))
-    #     exit()
+    else:
+        print('ERROR: unknown argument {}'.format(argv))
+        exit()
 
     print('-------------- GET PARAMETERS --------------')
     print('Preset: '+preset_string)

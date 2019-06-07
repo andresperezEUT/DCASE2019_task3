@@ -15,7 +15,7 @@ import time, datetime
 start_time = time.time()
 
 # SELECT THE PARAMETER PRESET HERE!
-preset = 'B'
+preset = 'B_eval'
 params = get_params(preset)
 
 # Get path to data to be processed
@@ -25,7 +25,8 @@ data_folder_path = os.path.join(dataset_dir, dataset_type_folder)
 
 # Check if output result folders exist, and create them in turn
 output_result_folder_path = os.path.join(params['output_result_folder_path'],
-                                         dataset_type_folder + "_" + preset)
+                                         dataset_type_folder + "_" +
+                                         params['preset_string'])
 if not os.path.exists(output_result_folder_path):
     os.mkdir(output_result_folder_path)
 
@@ -36,7 +37,8 @@ if not os.path.exists(output_result_doa_folder_path):
 
 # Check if metadata result folders exist, and create them in turn
 metadata_result_folder_path = os.path.join(params['metadata_result_folder_path'],
-                                           dataset_type_folder + "_" + preset)
+                                           dataset_type_folder + "_" +
+                                           params['preset_string'])
 if not os.path.exists(metadata_result_folder_path):
     os.mkdir(metadata_result_folder_path)
 
