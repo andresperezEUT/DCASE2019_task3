@@ -14,7 +14,7 @@ import pandas as pd
 # Path stuff
 
 # This parameter will define the algorithm type
-preset_string = 'A'
+preset_string = 'Q'
 
 # Default preset: contains path to folders
 params = get_params(preset_string)
@@ -113,11 +113,11 @@ for audio_file_name in audio_files:
                 sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation,
                                                beamforming_method)
 
-                filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                filename = sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
 
                 # TODO 4EDU: aqui he cambiado para que escriba en 'data/mono_data/wav/dev_param'
                 # si eso es lo que hay que hacer en eval...
-                path_to_write = os.path.join('data/mono_data/wav', params['mode'] + '_param' )
+                path_to_write = os.path.join('data/mono_data/wav', params['mode'] + '_param_2' + preset_string )
                 if not os.path.exists(path_to_write):
                     os.mkdir(path_to_write)
                 sf.write(os.path.join(path_to_write, filename), sound_event_mono, sr)
@@ -157,8 +157,8 @@ gt_classif['parent'] = parents
 
 # gt_classif.to_csv('gt_dev_parametric_8.csv', index=False)
 # TODO 4EDU: cambiar esta linea por algo como:
-# gt_csv_file_name = 'gt_' + params['mode'] + '_parametric_' + params['preset_string'] + '.csv'
-# gt_classif.to_csv(gt_csv_file_name, index=False)
+gt_csv_file_name = 'gt_' + params['mode'] + '_parametric_' + params['preset_string'] + '.csv'
+gt_classif.to_csv(gt_csv_file_name, index=False)
 
 print('EOF')
 

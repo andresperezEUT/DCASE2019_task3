@@ -122,9 +122,12 @@ fc_nbs = [[32]]
 # ===============================================================
 # output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'
 # n_mels = [40, 64, 96, 128]
-#
-output_file = 'crnn_seld_explore_net_tagger_BETA_nmels'
-n_mels = [40, 64, 96, 128]
+# n_mels = [64, 96, 128]
+
+# output_file = 'crnn_seld_explore_net_tagger_BETA_nmels'
+output_file = 'crnn_seld_Q_explore_net_tagger_BETA_nmels'
+# n_mels = [40, 64, 96, 128]
+n_mels = [64, 96, 128]
 
 
 # ************************************************************************************ mixup

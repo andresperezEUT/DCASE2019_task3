@@ -127,37 +127,48 @@ params_path = {'path_to_features': os.path.join(path_root_data, 'features'),
                # 'featuredir_eval': 'audio_eval_varup1/',
                'featuredir_dev': 'audio_dev_varup2_64mel/',
                'featuredir_eval': 'audio_eval_varup2_64mel/',
-               'featuredir_dev_param': 'audio_dev_param_varup2_64mel/',
-               'featuredir_eval_param': 'audio_eval_param_varup2_64mel/',
+               # 'featuredir_dev_param': 'audio_dev_param_varup2_64mel/',
+               # 'featuredir_eval_param': 'audio_eval_param_varup2_64mel/',
+               'featuredir_dev_param': 'audio_dev_param_Q_varup2_64mel/',
+               'featuredir_eval_param': 'audio_eval_param_Q_varup2_64mel/',
                # 'featuredir_dev': 'audio_dev_varup1_64mel/',
                # 'featuredir_eval': 'audio_eval_varup1_64mel/',
                'path_to_dataset': path_root_data,
                'audiodir_dev': 'wav/dev/',
                'audiodir_eval': 'wav/eval/',
-               'audiodir_dev_param': 'wav/dev_param/',
-               'audiodir_eval_param': 'wav/eval_param/',
+               # 'audiodir_dev_param': 'wav/dev_param/',
+               # 'audiodir_eval_param': 'wav/eval_param/',
+               'audiodir_dev_param': 'wav/dev_param_Q/',
+               'audiodir_eval_param': 'wav/eval_param_Q/',
                'audio_shapedir_dev': 'audio_dev_shapes/',
                'audio_shapedir_eval': 'audio_eval_shapes/',
-               'audio_shapedir_dev_param': 'audio_dev_param_shapes/',
-               'audio_shapedir_eval_param': 'audio_eval_param_shapes/',
+               # 'audio_shapedir_dev_param': 'audio_dev_param_shapes/',
+               # 'audio_shapedir_eval_param': 'audio_eval_param_shapes/',
+               'audio_shapedir_dev_param': 'audio_dev_param_Q_shapes/',
+               'audio_shapedir_eval_param': 'audio_eval_param_Q_shapes/',
                'gt_files': path_root_data}
-
 
 if params_extract.get('n_mels') == 40:
     params_path['featuredir_dev'] = 'audio_dev_varup2_40mel/'
     params_path['featuredir_eval'] = 'audio_eval_varup2_40mel/'
-    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_40mel/'
-    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_40mel/'
+    # params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_40mel/'
+    # params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_40mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_Q_varup2_40mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_Q_varup2_40mel/'
 elif params_extract.get('n_mels') == 96:
     params_path['featuredir_dev'] = 'audio_dev_varup2_96mel/'
     params_path['featuredir_eval'] = 'audio_eval_varup2_96mel/'
-    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_96mel/'
-    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_96mel/'
+    # params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_96mel/'
+    # params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_96mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_Q_varup2_96mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_Q_varup2_96mel/'
 elif params_extract.get('n_mels') == 128:
     params_path['featuredir_dev'] = 'audio_dev_varup2_128mel/'
     params_path['featuredir_eval'] = 'audio_eval_varup2_128mel/'
-    params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_128mel/'
-    params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_128mel/'
+    # params_path['featuredir_dev_param'] = 'audio_dev_param_varup2_128mel/'
+    # params_path['featuredir_eval_param'] = 'audio_eval_param_varup2_128mel/'
+    params_path['featuredir_dev_param'] = 'audio_dev_param_Q_varup2_128mel/'
+    params_path['featuredir_eval_param'] = 'audio_eval_param_Q_varup2_128mel/'
 
 
 if params_learn.get('mixup_log'):
@@ -919,7 +930,7 @@ audio_files = [f for f in os.listdir(data_folder_path) if not f.startswith('.')]
 # Path stuff
 
 # This parameter will define the algorithm type
-preset_string = '8'
+preset_string = 'Q'
 
 # Default preset: contains path to folders
 params = get_params(preset_string)
@@ -940,6 +951,8 @@ data_folder_path = os.path.join(dataset_dir, dataset_type_folder)
 results_metadata_doa_folder = os.path.join('.' + params['metadata_result_folder_path'],
                                            dataset_preset_folder,
                                            doa_folder)
+if not os.path.exists(results_metadata_doa_folder):
+    os.mkdir(results_metadata_doa_folder)
 
 # Path to results_metadata folder _before classification_; create it if necessary
 results_metadata_classif_folder = os.path.join('.' + params['metadata_result_folder_path'],
@@ -952,6 +965,8 @@ if not os.path.exists(results_metadata_classif_folder):
 results_output_doa_folder = os.path.join('.' + params['output_result_folder_path'],
                                            dataset_preset_folder,
                                            doa_folder)
+if not os.path.exists(results_output_doa_folder):
+    os.mkdir(results_output_doa_folder)
 
 # Path to results_output folder _before classification_; create it if necessary
 results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
@@ -1000,7 +1015,10 @@ for audio_file_name in audio_files:
                 end_frame = int(np.ceil(end_time_seconds * sr))
 
                 # from one event entry in the csv, to its corresponding audio clip filename (that I stored previously)
-                filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+                # filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav' old simpler name
+                # new name
+                filename = sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
+
                 curent_split = int(filename.split('_')[2][-1])
 
                 # vip Classify: this will need 4 models for 4 test splits in x-val in development mode + one model for evaluation mode
