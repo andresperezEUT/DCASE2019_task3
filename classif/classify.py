@@ -729,6 +729,10 @@ for kfo in range(1, 5):
             elif params_learn.get('early_stop') == "val_loss":
                 early_stop = EarlyStopping(monitor='val_loss', patience=params_learn.get('patience'), min_delta=0,
                                            verbose=1)
+
+            # vip save one best model for every fold, as I need this for submission
+            params_files['save_model'] = os.path.join(path_trained_models, params_ctrl.get('output_file') + '_v' +
+                                                      str(params_ctrl.get('count_trial')) + '_f' + str(kfo) + '.h5')
             checkpoint = ModelCheckpoint(params_files.get('save_model'), monitor='val_acc', verbose=1, save_best_only=True)
             reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.5, patience=5, verbose=1)
             path_tb = 'logs/pics/tb/{}/v{}'.format(params_ctrl.get('output_file'), str(params_ctrl.get('count_trial')))
