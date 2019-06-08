@@ -96,6 +96,9 @@ def compute_DOA_metrics(ref_desc_files, pred_output_format_files):
 
             print('\nAverage score for {} {} data'.format(score_type, 'fold' if score_type=='all' else split_key))
             print('SELD score: {}'.format(seld_scr))
-            print('SED metrics: er: {}, f:{}'.format(er, f))
+            if score_type == 'all':
+                print('Total SED metrics: er: {}, f:{}'.format(er, f))
+            else:
+                print('SED metrics: er: {}, f:{}'.format(er, f))
             print('DOA metrics: doa error: {}, frame recall:{}'.format(doa_err, frame_recall))
 

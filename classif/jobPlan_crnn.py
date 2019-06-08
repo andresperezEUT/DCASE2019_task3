@@ -117,7 +117,7 @@ cnn_nb_filts = [64]
 rnn_nbs = [[64]]
 fc_nbs = [[32]]
 # output_file = 'crnn_seld_explore_net_tagger_BETA'
-# n_mels = [64]
+n_mels = [64]
 
 # ===============================================================
 # output_file = 'crnn_seld_explore_net_tagger_ALPHA_nmels'
@@ -126,9 +126,9 @@ fc_nbs = [[32]]
 # n_mels = [64, 96, 128]
 
 # output_file = 'crnn_seld_explore_net_tagger_BETA_nmels'
-output_file = 'crnn_seld_Q_explore_net_tagger_BETA_nmels'
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA_nmels'
 # n_mels = [40, 64, 96, 128]
-n_mels = [64, 96, 128]
+# n_mels = [64, 96, 128]
 
 
 # ************************************************************************************ mixup
@@ -136,14 +136,14 @@ mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
 mixup_mode = 'intra'
 mixup_log = False
 mixup_clamp = False
+output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
 
-# enable_mixup_warmup = 0  FIX    # this to 0 means enable warmup, pero mira waspaa19
 
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
+# mixup_alphas = [0.1, 0.2, 0.3, 0.4]
+# enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
 # mixup_warmup_epochs = [5, 10]
-# mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2]
-# output_file = 'FSDnoisy18k_js_tidy_noisy_mixup_warmup_intra03_warmup10_refine'
-# mixup_alphas = [0.3]
-# mixup_warmup_epochs = [10]
+
 
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
@@ -154,7 +154,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_alpha):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -202,26 +202,27 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
 
     # watch 2 stage learning***********************, just define the minimum to ignore
     data['learn']['stages'] = 1                  #usually 1 or 2. but 0 for enabling mixup_warmup
+    # data['learn']['stages'] = enable_mixup_warmup  #usually 1 or 2. but 0 for enabling mixup_warmup
 
     # watch 1 stage dropout***********************
     data['learn']['dropout'] = False                    # True False
     data['learn']['dropout_prob'] = False       # only used if True
 
     # watch 1 stage mixup***********************
-    data['learn']['mixup'] = False                    # True False
-    data['learn']['mixup_mode'] = False
-    data['learn']['mixup_alpha'] = False
-    data['learn']['mixup_log'] = False
-    data['learn']['mixup_clamp'] = False
-    data['learn']['mixup_warmup_epochs'] = False
+    # data['learn']['mixup'] = False                    # True False
+    # data['learn']['mixup_mode'] = False
+    # data['learn']['mixup_alpha'] = False
+    # data['learn']['mixup_log'] = False
+    # data['learn']['mixup_clamp'] = False
+    # data['learn']['mixup_warmup_epochs'] = False
 
     # watch 1 stage mixup*********************** this is the good one
-    # data['learn']['mixup'] = True                    # True False
-    # data['learn']['mixup_mode'] = mixup_mode
-    # # data['learn']['mixup_alpha'] = mixup_alpha
-    # data['learn']['mixup_log'] = mixup_log
-    # data['learn']['mixup_clamp'] = mixup_clamp
-    # # data['learn']['mixup_warmup_epochs'] = mixup_warmup_epoch
+    data['learn']['mixup'] = True                    # True False
+    data['learn']['mixup_mode'] = mixup_mode
+    data['learn']['mixup_alpha'] = mixup_alpha
+    data['learn']['mixup_log'] = mixup_log
+    data['learn']['mixup_clamp'] = mixup_clamp
+    data['learn']['mixup_warmup_epochs'] = False
 
 
     data['learn']['early_stop'] = 'val_acc'        # True False
@@ -247,36 +248,38 @@ def main():
                                 for rnn_nb in rnn_nbs:
                                     for fc_nb in fc_nbs:
                                         for n_mel in n_mels:
+                                            for mixup_alpha in mixup_alphas:
 
-                                            count_trial += 1
+                                                count_trial += 1
 
-                                            change_yaml(yaml_file,
-                                                        count_trial=count_trial,
-                                                        output_file=output_file,
-                                                        model=model,
-                                                        loss=loss,
-                                                        patch_len=patch_len,
-                                                        lr=lr,
-                                                        batch_size=batch_size,
-                                                        cnn_nb_filt=cnn_nb_filt,
-                                                        rnn_nb=rnn_nb,
-                                                        fc_nb=fc_nb,
-                                                        n_mel=n_mel
-                                                        )
+                                                change_yaml(yaml_file,
+                                                            count_trial=count_trial,
+                                                            output_file=output_file,
+                                                            model=model,
+                                                            loss=loss,
+                                                            patch_len=patch_len,
+                                                            lr=lr,
+                                                            batch_size=batch_size,
+                                                            cnn_nb_filt=cnn_nb_filt,
+                                                            rnn_nb=rnn_nb,
+                                                            fc_nb=fc_nb,
+                                                            n_mel=n_mel,
+                                                            mixup_alpha=mixup_alpha
+                                                            )
 
-                                            # call the job
-                                            str_exec = 'python classify.py -p ' + yaml_file
-                                            print(str_exec)
-                                            # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
+                                                # call the job
+                                                str_exec = 'python classify.py -p ' + yaml_file
+                                                print(str_exec)
+                                                # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
 
-                                            try:
-                                                retcode = subprocess.call(str_exec, shell=True)
-                                                if retcode < 0:
-                                                    print("Child was terminated by signal", -retcode, file=sys.stderr)
-                                                else:
-                                                    print("Child returned", retcode, file=sys.stderr)
-                                            except OSError as e:
-                                                print("Execution failed:", e, file=sys.stderr)
+                                                try:
+                                                    retcode = subprocess.call(str_exec, shell=True)
+                                                    if retcode < 0:
+                                                        print("Child was terminated by signal", -retcode, file=sys.stderr)
+                                                    else:
+                                                        print("Child returned", retcode, file=sys.stderr)
+                                                except OSError as e:
+                                                    print("Execution failed:", e, file=sys.stderr)
 
     end = time.time()
 
