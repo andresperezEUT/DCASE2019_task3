@@ -138,14 +138,14 @@ mixup_mode = 'intra'
 mixup_log = False
 mixup_clamp = False
 mixup_warmup_epochs = [-1]
-mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
-output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
+# mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
 
 
-# output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
+output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
 # # to enable warmup, must change below in data['learn']['stages']
-# mixup_warmup_epochs = [5, 10]
-# mixup_alphas = [0.1, 0.2, 0.3, 0.4]
+mixup_warmup_epochs = [4, 8]
+mixup_alphas = [0.1, 0.2, 0.3, 0.4]
 
 
 # ************************************************************************************ lq_loss
@@ -207,8 +207,8 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['LSRmapping'] = False         # LSRmapping False
 
     # watch 2 stage learning***********************, just define the minimum to ignore
-    data['learn']['stages'] = 1                  #usually 1 or 2. but 0 for enabling mixup_warmup
-    # data['learn']['stages'] = enable_mixup_warmup  #usually 1 or 2. but 0 for enabling mixup_warmup
+    # data['learn']['stages'] = 1                  #usually 1 or 2. but 0 for enabling mixup_warmup
+    data['learn']['stages'] = enable_mixup_warmup  #usually 1 or 2. but 0 for enabling mixup_warmup
 
     # watch 1 stage dropout***********************
     data['learn']['dropout'] = False                    # True False
