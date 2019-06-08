@@ -132,29 +132,35 @@ n_mels = [64]
 
 
 # ************************************************************************************ mixup
-mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
+enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
+# so I leave it always here, but the Enable is below in data['learn']['stages']
 mixup_mode = 'intra'
 mixup_log = False
 mixup_clamp = False
+mixup_warmup_epochs = [-1]
+mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
 output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
 
 
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
-# mixup_alphas = [0.1, 0.2, 0.3, 0.4]
-# enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
+# # to enable warmup, must change below in data['learn']['stages']
 # mixup_warmup_epochs = [5, 10]
+# mixup_alphas = [0.1, 0.2, 0.3, 0.4]
 
 
+# ************************************************************************************ lq_loss
+# losses = ['lq_loss']
+# q_losses = [0.5, 0.6]
 
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
-# losses = ['lq_loss_origin']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
-# q_losses = [0.5, 0.6]
+# losses = ['lq_loss']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
+# q_losses = [0.3, 0.5, 0.7]
 
 # vip define the path of the yaml with (most) of the parameters that define the experiment
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_alpha):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_warmup_epoch, mixup_alpha):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -222,7 +228,7 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['mixup_alpha'] = mixup_alpha
     data['learn']['mixup_log'] = mixup_log
     data['learn']['mixup_clamp'] = mixup_clamp
-    data['learn']['mixup_warmup_epochs'] = False
+    data['learn']['mixup_warmup_epochs'] = mixup_warmup_epoch
 
 
     data['learn']['early_stop'] = 'val_acc'        # True False
@@ -248,38 +254,40 @@ def main():
                                 for rnn_nb in rnn_nbs:
                                     for fc_nb in fc_nbs:
                                         for n_mel in n_mels:
-                                            for mixup_alpha in mixup_alphas:
+                                            for mixup_warmup_epoch in mixup_warmup_epochs:
+                                                for mixup_alpha in mixup_alphas:
 
-                                                count_trial += 1
+                                                    count_trial += 1
 
-                                                change_yaml(yaml_file,
-                                                            count_trial=count_trial,
-                                                            output_file=output_file,
-                                                            model=model,
-                                                            loss=loss,
-                                                            patch_len=patch_len,
-                                                            lr=lr,
-                                                            batch_size=batch_size,
-                                                            cnn_nb_filt=cnn_nb_filt,
-                                                            rnn_nb=rnn_nb,
-                                                            fc_nb=fc_nb,
-                                                            n_mel=n_mel,
-                                                            mixup_alpha=mixup_alpha
-                                                            )
+                                                    change_yaml(yaml_file,
+                                                                count_trial=count_trial,
+                                                                output_file=output_file,
+                                                                model=model,
+                                                                loss=loss,
+                                                                patch_len=patch_len,
+                                                                lr=lr,
+                                                                batch_size=batch_size,
+                                                                cnn_nb_filt=cnn_nb_filt,
+                                                                rnn_nb=rnn_nb,
+                                                                fc_nb=fc_nb,
+                                                                n_mel=n_mel,
+                                                                mixup_warmup_epoch=mixup_warmup_epoch,
+                                                                mixup_alpha=mixup_alpha
+                                                                )
 
-                                                # call the job
-                                                str_exec = 'python classify.py -p ' + yaml_file
-                                                print(str_exec)
-                                                # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
+                                                    # call the job
+                                                    str_exec = 'python classify.py -p ' + yaml_file
+                                                    print(str_exec)
+                                                    # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
 
-                                                try:
-                                                    retcode = subprocess.call(str_exec, shell=True)
-                                                    if retcode < 0:
-                                                        print("Child was terminated by signal", -retcode, file=sys.stderr)
-                                                    else:
-                                                        print("Child returned", retcode, file=sys.stderr)
-                                                except OSError as e:
-                                                    print("Execution failed:", e, file=sys.stderr)
+                                                    try:
+                                                        retcode = subprocess.call(str_exec, shell=True)
+                                                        if retcode < 0:
+                                                            print("Child was terminated by signal", -retcode, file=sys.stderr)
+                                                        else:
+                                                            print("Child returned", retcode, file=sys.stderr)
+                                                    except OSError as e:
+                                                        print("Execution failed:", e, file=sys.stderr)
 
     end = time.time()
 

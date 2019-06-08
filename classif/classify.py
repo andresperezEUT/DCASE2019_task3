@@ -41,8 +41,8 @@ from mobilenet import mobilenet
 # andres-----------------------------------------
 # from parameters import get_params
 import csv
-import sys
 # wanna import functions from modules in the parent directory
+import sys
 sys.path.append('../')
 from parameters import get_params
 from compute_doa_metrics import compute_DOA_metrics
