@@ -676,7 +676,7 @@ for kfo in range(1, 5):
             # watch warmup****************************************** no mixup is applied
             print('\n===implementing a warmup period for mixup: WARMUP STAGE (no mixup)**************************')
             params_learn['mixup'] = False
-            tr_gen_patch_mixup_warmup = DataGeneratorPatch(feature_dir=params_path.get('featurepath_tr'),
+            tr_gen_patch_mixup_warmup = DataGeneratorPatch(feature_dir=params_path.get('featurepath_dev'),
                                                            file_list=tr_files,
                                                            params_learn=params_learn,
                                                            params_extract=params_extract,
@@ -710,9 +710,11 @@ for kfo in range(1, 5):
             print('\n===implementing a warmup period for mixup: FINAL STAGE (with mixup)**************************')
             # delete the previous generator to free memory
             del tr_gen_patch_mixup_warmup
+            # probably should delete the generator that I loaded before.. well I'm overwriting
+            # del tr_gen_patch
 
             params_learn['mixup'] = True
-            tr_gen_patch = DataGeneratorPatch(feature_dir=params_path.get('featurepath_tr'),
+            tr_gen_patch = DataGeneratorPatch(feature_dir=params_path.get('featurepath_dev'),
                                               file_list=tr_files,
                                               params_learn=params_learn,
                                               params_extract=params_extract,
