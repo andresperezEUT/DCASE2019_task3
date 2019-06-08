@@ -1019,7 +1019,7 @@ for audio_file_name in audio_files:
                 # new name
                 filename = sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
 
-                curent_split = int(filename.split('_')[2][-1])
+                curent_split = int(filename.split('_')[3][-1])
 
                 # vip Classify: this will need 4 models for 4 test splits in x-val in development mode + one model for evaluation mode
                 # to store prediction probabilites for one single test clip
