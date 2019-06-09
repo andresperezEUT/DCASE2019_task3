@@ -976,11 +976,14 @@ if not os.path.exists(results_output_doa_folder):
 
 # Path to results_output folder _before classification_; create it if necessary
 # old: this overwrites the several trials
-# results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
-#                                                dataset_preset_folder,
-#                                                classif_folder)
+results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
+                                               dataset_preset_folder,
+                                               classif_folder)
+# create just the folder classif if there is not such thing
+if not os.path.exists(results_output_classif_folder):
+    os.mkdir(results_output_classif_folder)
 
-# old: a folder for each trial. This is already what we have to submit for development mode
+# new: a folder for each trial. This is already what we have to submit for development mode
 results_output_classif_folder = os.path.join('.' + params['output_result_folder_path'],
                                                dataset_preset_folder,
                                                classif_folder,
