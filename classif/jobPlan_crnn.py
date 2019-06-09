@@ -102,23 +102,23 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 
-# ===================================================archi  ALPHA, with lrs = [0.0001]
-# lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
-# cnn_nb_filts = [128]
-# rnn_nbs = [[64]]
-# fc_nbs = [[32]]
-# output_file = 'crnn_seld_explore_net_tagger_ALPHA'
-# n_mels = [128]
-
-
-# ===================================================archi BETA, with lrs = [0.001]
-cnn_nb_filts = [64]
+# ===================================================vip archi  ALPHA, with lrs = [0.0001]
+lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
+cnn_nb_filts = [128]
 rnn_nbs = [[64]]
 fc_nbs = [[32]]
-# output_file = 'crnn_seld_explore_net_tagger_BETA'
-n_mels = [64]
-# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
-lrs = [0.0005]   # this one we never tried
+# output_file = 'crnn_seld_explore_net_tagger_ALPHA'
+n_mels = [128]
+
+
+# ===================================================vip archi BETA, with lrs = [0.001]
+# cnn_nb_filts = [64]
+# rnn_nbs = [[64]]
+# fc_nbs = [[32]]
+# # output_file = 'crnn_seld_explore_net_tagger_BETA'
+# n_mels = [64]
+# # lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+# lrs = [0.0005]   # this one we never tried
 
 
 # ===============================================================
@@ -144,7 +144,8 @@ mixup_warmup_epochs = [-1]
 mixup_alphas = [0.05, 0.1, 0.15, 0.2]
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
-output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
+output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
 
 
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
