@@ -117,8 +117,8 @@ rnn_nbs = [[64]]
 fc_nbs = [[32]]
 # output_file = 'crnn_seld_explore_net_tagger_BETA'
 n_mels = [64]
-lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
-# lrs = [0.0005]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+# lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+lrs = [0.0005]   # this one we never tried
 
 
 # ===============================================================
@@ -143,8 +143,8 @@ mixup_warmup_epochs = [-1]
 # mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
 mixup_alphas = [0.05, 0.1, 0.15, 0.2]
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
-output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
-# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr_mixup_alpha'
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
+output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
 
 
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
