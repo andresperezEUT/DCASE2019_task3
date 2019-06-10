@@ -384,6 +384,118 @@ def mixup(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_labe
     return features_out, y_cat_out
 
 
+def rand_bbox(time_dim, freq_dim, lam):
+
+    T = time_dim
+    F = freq_dim
+
+    # set centre of the cropping region, from a uniform distribution
+    r_t = np.random.randint(T)
+    r_f = np.random.randint(F)
+
+    # set the area of the cropping region, inversely proportinal to lambda
+    # hance it is rectangular area, proportional to the patch dimensions
+    cut_rat = np.sqrt(1. - lam)
+    r_w = np.int(T * cut_rat)
+    r_h = np.int(F * cut_rat)
+
+    # the width/height of the region is centered in r_t, r_f
+    # fix this to have horizontal regions throughout all the time axis
+    bbx1 = np.clip(r_t - r_w/2, 0, T)
+    bbx2 = np.clip(r_t + r_w/2, 0, T)
+
+    # fix this to have horizontal regions throughout all the freq axis
+    bby1 = np.clip(r_f - r_h/2, 0, F)
+    bby2 = np.clip(r_f + r_h/2, 0, F)
+
+    return bbx1, bbx2, bby1, bby2
+
+
+def cutmix(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_labels=None, all_features=None, alpha=0,
+          n_classes=11, make_log=False, eps=0, clamp=0, single_lam=True):
+    """
+    Apply mixup augmnentation. possibility to make it
+    - intra batch
+    - inter batch
+
+    :param mode:
+    :param index:
+    :param all_patch_indexes:
+    :param batch_size:
+    :param all_labels:
+    :param all_features:
+    :param alpha:
+    :param n_classes:
+    :return:
+    """
+
+    # only intra mode is tried for now. for inter mode, see mixup above
+    patch_ids = all_patch_indexes[index * batch_size:(index + 1) * batch_size]
+
+    # fetch labels for the batch
+    # ndarray (batch_size, n_classes)
+    _y_cat1 = get_one_hot(all_labels, patch_ids, n_classes)
+
+    # fetch features for the batch
+    # (batch_size, time, freq)
+    _features1 = all_features[patch_ids]
+
+    # create randomized copies for both patches and labels (with correspondence)
+    patch_ids_rand = permutation(patch_ids)
+    _y_cat2 = get_one_hot(all_labels, patch_ids_rand, n_classes)
+    _features2 = all_features[patch_ids_rand]
+    # checked that y_cat and features are just randomized copies and there is feature-label correspondence
+
+
+    # vip apply cutmix, can be optmized, this is more readable
+    y_cat_out = np.zeros_like(_y_cat1)
+    _features = np.zeros_like(_features1)
+
+    if single_lam:
+        # one single lambda for all the batch
+        lam = np.random.beta(alpha, alpha)
+        lam = np.ones(batch_size)*lam
+    else:
+        # one lambda per patch in the minibatch
+        lam = np.random.beta(alpha, alpha, batch_size)
+
+    # define cropping region for all elements in the batch
+    bbx1, bbx2, bby1, bby2 = rand_bbox(_features1.shape[1], _features1.shape[2], lam)
+
+    for ii in range(batch_size):
+        # apply cutmix on the patch
+        # original patch
+        _features[ii, :, :] = _features1[ii, :, :]
+        # remove the cropping region, and put a new one from a random patch
+        _features[ii, bbx1:bbx2, bby1:bby2] = _features2[ii, bbx1:bbx2, bby1:bby2]
+
+        # apply cutmix on the target label vector (same as in mixup)
+        y_cat_out[ii] = lam[ii] * _y_cat1[ii] + (1 - lam[ii]) * _y_cat2[ii]
+
+        if make_log:
+            _features[ii] = np.log10(_features[ii] + eps)
+
+    # original PyTorch implementation
+    # lam = np.random.beta(args.beta, args.beta)
+    # rand_index = torch.randperm(input.size()[0]).cuda()
+    # target_a = target
+    # target_b = target[rand_index]
+    # bbx1, bby1, bbx2, bby2 = rand_bbox(input.size(), lam)
+    # input[:, :, bbx1:bbx2, bby1:bby2] = input[rand_index, :, bbx1:bbx2, bby1:bby2]
+    # compute output
+    # input_var = torch.autograd.Variable(input, requires_grad=True)
+    # target_a_var = torch.autograd.Variable(target_a)
+    # target_b_var = torch.autograd.Variable(target_b)
+    # output = model(input_var)
+    # loss = criterion(output, target_a_var) * lam + criterion(output, target_b_var) * (1. - lam)
+
+    # ojo con loas dimensiones de features. adjust format to input CNN
+    # (batch_size, 1, time, freq) for channels_first
+    features_out = _features[:, np.newaxis]
+
+    return features_out, y_cat_out
+
+
 def get_label_files(filelist=None, dire=None, suffix_in=None, suffix_out=None):
     """
 
@@ -462,6 +574,16 @@ class DataGeneratorPatch(Sequence):
         self.mixup_make_log = params_learn.get('mixup_log')
         self.mixup_eps = params_extract.get('eps')
         self.mixup_clamp = params_learn.get('mixup_clamp')
+
+        # cutmix
+        self.cutmix = params_learn.get('cutmix')
+        self.cutmix_mode = params_learn.get('cutmix_mode')
+        self.cutmix_alpha = params_learn.get('cutmix_alpha')
+        self.cutmix_make_log = params_learn.get('cutmix_log')
+        self.cutmix_eps = params_extract.get('eps')
+        self.cutmix_clamp = params_learn.get('cutmix_clamp')
+        self.single_lam = params_learn.get('cutmix_single_lam')
+
 
         # Given a directory with precomputed features in files:
         # - create the variable self.features with all the TF patches of all the files in the feature_dir
@@ -695,6 +817,21 @@ class DataGeneratorPatch(Sequence):
             # but in the val subset there is no mixup, but we need to apply the log on the fly
             for ii in range(self.batch_size):
                 features[ii, 0, :] = np.log10(features[ii, 0, :] + self.mixup_eps)
+
+        if self.cutmix and self.val_mode is False:
+            features, y_cat = cutmix(mode=self.cutmix_mode,
+                                     index=index,
+                                     all_patch_indexes=self.indexes,
+                                     batch_size=self.batch_size,
+                                     all_labels=self.labels,
+                                     all_features=self.features,
+                                     n_classes=self.n_classes,
+                                     alpha=self.cutmix_alpha,
+                                     make_log=self.cutmix_make_log,
+                                     eps=self.cutmix_eps,
+                                     clamp=self.cutmix_clamp,
+                                     single_lam=self.single_lam
+                                     )
 
         return features, y_cat
 

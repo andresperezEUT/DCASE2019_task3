@@ -72,6 +72,12 @@ learn:
   stages: 1
   val_method: random
   val_split: 0.15
+  cutmix: false
+  cutmix_alpha: 1
+  cutmix_clamp: false
+  cutmix_log: false
+  cutmix_mode: intra
+  cutmix_single_lam: true
 loss:
   k_loss: guay
   l_loss: 2.7
