@@ -411,12 +411,12 @@ def rand_bbox(time_dim, freq_dim, lam):
 
     # the width/height of the region is centered in r_t, r_f
     # fix this to have horizontal regions throughout all the time axis
-    bbx1 = np.clip(r_t - r_w/2, 0, T)
-    bbx2 = np.clip(r_t + r_w/2, 0, T)
+    bbx1 = int(np.round(np.clip(r_t - r_w/2, 0, T)))
+    bbx2 = int(np.round(np.clip(r_t + r_w/2, 0, T)))
 
     # fix this to have horizontal regions throughout all the freq axis
-    bby1 = np.clip(r_f - r_h/2, 0, F)
-    bby2 = np.clip(r_f + r_h/2, 0, F)
+    bby1 = int(np.round(np.clip(r_f - r_h/2, 0, F)))
+    bby2 = int(np.round(np.clip(r_f + r_h/2, 0, F)))
 
     return bbx1, bbx2, bby1, bby2
 

@@ -72,7 +72,7 @@ learn:
   stages: 1
   val_method: random
   val_split: 0.15
-  cutmix: false
+  cutmix: true
   cutmix_alpha: 1
   cutmix_clamp: false
   cutmix_log: false
