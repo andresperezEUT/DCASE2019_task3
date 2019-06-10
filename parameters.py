@@ -17,7 +17,8 @@ def get_params(preset_string=None):
         after_classification_folder_name='classif',
 
         # DATASET LOADING PARAMETERS
-        mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
+        # mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
+        mode='eval',         # 'dev' - development or 'eval' - evaluation dataset
         dataset='foa',      # 'foa' - ambisonic or 'mic' - microphone signals
 
         # MODEL PARAMETERS
