@@ -385,6 +385,13 @@ def mixup(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_labe
 
 
 def rand_bbox(time_dim, freq_dim, lam):
+    """
+
+    :param time_dim:
+    :param freq_dim:
+    :param lam: ndarray (batc_size,)
+    :return:
+    """
 
     T = time_dim
     F = freq_dim
@@ -395,7 +402,10 @@ def rand_bbox(time_dim, freq_dim, lam):
 
     # set the area of the cropping region, inversely proportinal to lambda
     # hance it is rectangular area, proportional to the patch dimensions
-    cut_rat = np.sqrt(1. - lam)
+
+    # vip for now, we grab the first element of lam since they are all the same.
+    # if I implement 64 different lambdas, we end up with 64 different sets of coordinates, and
+    cut_rat = np.sqrt(1 - lam[0])
     r_w = np.int(T * cut_rat)
     r_h = np.int(F * cut_rat)
 
@@ -452,6 +462,7 @@ def cutmix(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_lab
     _features = np.zeros_like(_features1)
 
     if single_lam:
+        # vipfor now
         # one single lambda for all the batch
         lam = np.random.beta(alpha, alpha)
         lam = np.ones(batch_size)*lam
@@ -459,8 +470,10 @@ def cutmix(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_lab
         # one lambda per patch in the minibatch
         lam = np.random.beta(alpha, alpha, batch_size)
 
-    # define cropping region for all elements in the batch
+    # define cropping region for ALL elements in the batch (mode single_lam)
     bbx1, bbx2, bby1, bby2 = rand_bbox(_features1.shape[1], _features1.shape[2], lam)
+
+    # if single_lam ==FAlse, we bbx1 is a list of 64 coordinates and so on
 
     for ii in range(batch_size):
         # apply cutmix on the patch
