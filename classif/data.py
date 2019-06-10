@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 from feat_ext import load_audio_file, get_normalized_audio, modify_file_variable_length
 
+from spec_augment import spec_augment
+
 """
 TODO:
 data generators are thought for small datasets (no memory issues). improve by optimizing resources for large datasets
@@ -509,6 +511,48 @@ def cutmix(mode='intra', index=0, all_patch_indexes=None, batch_size=64, all_lab
     return features_out, y_cat_out
 
 
+def do_spec_augment_batch(index=0, all_patch_indexes=None, batch_size=64, all_features=None, sa_time_warp=10,
+                          sa_freq_mask=21, sa_time_mask=15):
+    """
+
+    :param index:
+    :param all_patch_indexes:
+    :param batch_size:
+    :param all_features:
+    :param sa_time_warp:
+    :param sa_freq_mask:
+    :param sa_time_mask:
+    :return:
+    """
+
+    # only intra mode is tried for now. for inter mode, see mixup above
+    patch_ids = all_patch_indexes[index * batch_size:(index + 1) * batch_size]
+
+    # fetch features for the batch
+    # (batch_size, time, freq)
+    _features = all_features[patch_ids]
+
+    for ii in range(batch_size):
+        # reshape the  patch to freq, time, to feed spec_augment funciton
+        current_patch = np.transpose(_features[ii, :, :])
+
+        # original patch
+        augmented_patch = spec_augment(current_patch,
+                                       time_warping_para=sa_time_warp,
+                                       frequency_masking_para=sa_freq_mask,
+                                       time_masking_para=sa_time_mask,
+                                       frequency_mask_num=1,
+                                       time_mask_num=1
+                                       )
+
+        _features[ii, :, :] = np.transpose(augmented_patch)
+
+    # ojo con loas dimensiones de features. adjust format to input CNN
+    # (batch_size, 1, time, freq) for channels_first
+    features_out = _features[:, np.newaxis]
+    return features_out
+
+
 def get_label_files(filelist=None, dire=None, suffix_in=None, suffix_out=None):
     """
 
@@ -597,6 +641,11 @@ class DataGeneratorPatch(Sequence):
         self.cutmix_clamp = params_learn.get('cutmix_clamp')
         self.single_lam = params_learn.get('cutmix_single_lam')
 
+        # spec_augment
+        self.spec_augment = params_learn.get('spec_augment')
+        self.sa_time_warp = params_learn.get('sa_time_warp')
+        self.sa_freq_mask = params_learn.get('sa_freq_mask')
+        self.sa_time_mask = params_learn.get('sa_time_mask')
 
         # Given a directory with precomputed features in files:
         # - create the variable self.features with all the TF patches of all the files in the feature_dir
@@ -845,6 +894,16 @@ class DataGeneratorPatch(Sequence):
                                      clamp=self.cutmix_clamp,
                                      single_lam=self.single_lam
                                      )
+
+        if self.spec_augment and self.val_mode is False:
+            features = do_spec_augment_batch(index=index,
+                                             all_patch_indexes=self.indexes,
+                                             batch_size=self.batch_size,
+                                             all_features=self.features,
+                                             sa_time_warp=self.sa_time_warp,
+                                             sa_freq_mask=self.sa_freq_mask,
+                                             sa_time_mask=self.sa_time_mask,
+                                             )
 
         return features, y_cat
 

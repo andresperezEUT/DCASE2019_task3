@@ -66,18 +66,22 @@ learn:
 #  n_epochs: 1      # debug
   optim: Adam
   origin: useless
-  patience: 10
+  patience: 15
   preactivation: 4
   stage1_epoch: 25
   stages: 1
   val_method: random
   val_split: 0.15
-  cutmix: true
+  cutmix: false
   cutmix_alpha: 1
   cutmix_clamp: false
   cutmix_log: false
   cutmix_mode: intra
   cutmix_single_lam: true
+  spec_augment: true
+  sa_time_warp: 10
+  sa_freq_mask: 21
+  sa_time_mask: 15
 loss:
   k_loss: guay
   l_loss: 2.7

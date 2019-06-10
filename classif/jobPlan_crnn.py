@@ -103,21 +103,21 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # ===================================================vip archi  ALPHA, with lrs = [0.0001]
-lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
-cnn_nb_filts = [128]
-rnn_nbs = [[64]]
-fc_nbs = [[32]]
-# output_file = 'crnn_seld_explore_net_tagger_ALPHA'
-n_mels = [128]
+# lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
+# cnn_nb_filts = [128]
+# rnn_nbs = [[64]]
+# fc_nbs = [[32]]
+# # output_file = 'crnn_seld_explore_net_tagger_ALPHA'
+# n_mels = [128]
 
 
 # ===================================================vip archi BETA, with lrs = [0.001]
-# cnn_nb_filts = [64]
-# rnn_nbs = [[64]]
-# fc_nbs = [[32]]
-# # output_file = 'crnn_seld_explore_net_tagger_BETA'
-# n_mels = [64]
-# # lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+cnn_nb_filts = [64]
+rnn_nbs = [[64]]
+fc_nbs = [[32]]
+# output_file = 'crnn_seld_explore_net_tagger_BETA'
+n_mels = [64]
+lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
 # lrs = [0.0005]   # this one we never tried
 
 
@@ -134,18 +134,18 @@ n_mels = [128]
 
 
 # ************************************************************************************ mixup
-enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
-# so I leave it always here, but the Enable is below in data['learn']['stages']
-mixup_mode = 'intra'
-mixup_log = False
-mixup_clamp = False
-mixup_warmup_epochs = [-1]
-# mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
-mixup_alphas = [0.05, 0.1, 0.15, 0.2]
-# output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
-# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
-# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
-output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
+# enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
+# # so I leave it always here, but the Enable is below in data['learn']['stages']
+# mixup_mode = 'intra'
+# mixup_log = False
+# mixup_clamp = False
+# mixup_warmup_epochs = [-1]
+# # mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
+# mixup_alphas = [0.05, 0.1, 0.15, 0.2]
+# # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
+# # output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
+# # output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
+# output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
 
 
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
@@ -163,6 +163,22 @@ output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_0510
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_lq_loss'
 
 
+# ************************************************************************************ specaugment
+# enable_mixup_warmup = 0   # this to 0 means enable warmup, must be changed below in data['learn']['stages']
+# so I leave it always here, but the Enable is below in data['learn']['stages']
+# mixup_mode = 'intra'
+# mixup_log = False
+# mixup_clamp = False
+mixup_warmup_epochs = [-1]
+mixup_alphas = [-1]
+sa_time_warp = 10
+# sa_time_warp = 20
+sa_freq_mask = 21
+sa_time_masks = [10, 20]
+output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_specaugment_warp10'
+# output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_specaugment_warp20'
+
+
 losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # losses = ['lq_loss']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_origin, CCE_diy_outlier_origin, lq_loss_origin
 # q_losses = [0.3, 0.5, 0.7]
@@ -171,7 +187,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 yaml_file = 'params_edu_v1.yaml'
 
 
-def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_warmup_epoch, mixup_alpha):
+def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_warmup_epoch, mixup_alpha, sa_time_mask):
     """
     Modifies the yaml fiven by fname according to the input parameters.
     This allows to test several values for hyper-parameter(s) on the same run
@@ -225,22 +241,29 @@ def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, bat
     data['learn']['dropout_prob'] = False       # only used if True
 
     # watch 1 stage mixup***********************, if I dont wanna use it
-    # data['learn']['mixup'] = False                    # True False
-    # data['learn']['mixup_mode'] = False
-    # data['learn']['mixup_alpha'] = False
-    # data['learn']['mixup_log'] = False
-    # data['learn']['mixup_clamp'] = False
-    # data['learn']['mixup_warmup_epochs'] = False
+    data['learn']['mixup'] = False                    # True False
+    data['learn']['mixup_mode'] = False
+    data['learn']['mixup_alpha'] = False
+    data['learn']['mixup_log'] = False
+    data['learn']['mixup_clamp'] = False
+    data['learn']['mixup_warmup_epochs'] = False
 
     # watch 1 stage mixup*********************** this is the good one
-    # data['learn']['stages'] = enable_mixup_warmup  #for enabling mixup_warmup
-    data['learn']['stages'] = 1                  #usually 1 or 2. but 0 for enabling mixup_warmup
-    data['learn']['mixup'] = True                    # True False
-    data['learn']['mixup_mode'] = mixup_mode
-    data['learn']['mixup_alpha'] = mixup_alpha
-    data['learn']['mixup_log'] = mixup_log
-    data['learn']['mixup_clamp'] = mixup_clamp
-    data['learn']['mixup_warmup_epochs'] = mixup_warmup_epoch
+    # # data['learn']['stages'] = enable_mixup_warmup  #for enabling mixup_warmup
+    # data['learn']['stages'] = 1                  #usually 1 or 2. but 0 for enabling mixup_warmup
+    # data['learn']['mixup'] = True                    # True False
+    # data['learn']['mixup_mode'] = mixup_mode
+    # data['learn']['mixup_alpha'] = mixup_alpha
+    # data['learn']['mixup_log'] = mixup_log
+    # data['learn']['mixup_clamp'] = mixup_clamp
+    # data['learn']['mixup_warmup_epochs'] = mixup_warmup_epoch
+
+    # watch SpecAugment***********************,
+    data['learn']['spec_augment'] = True                    # True False
+    data['learn']['sa_time_warp'] = sa_time_warp
+    data['learn']['sa_freq_mask'] = sa_freq_mask
+    data['learn']['sa_time_mask'] = sa_time_mask
+
 
     # watch lqloss***********************
     # data['loss']['q_loss'] = q_loss
@@ -269,39 +292,40 @@ def main():
                                         for n_mel in n_mels:
                                             for mixup_warmup_epoch in mixup_warmup_epochs:
                                                 for mixup_alpha in mixup_alphas:
-                                                    # for q_loss in q_losses:
+                                                    for sa_time_mask in sa_time_masks:
 
-                                                    count_trial += 1
+                                                        count_trial += 1
 
-                                                    change_yaml(yaml_file,
-                                                                count_trial=count_trial,
-                                                                output_file=output_file,
-                                                                model=model,
-                                                                loss=loss,
-                                                                patch_len=patch_len,
-                                                                lr=lr,
-                                                                batch_size=batch_size,
-                                                                cnn_nb_filt=cnn_nb_filt,
-                                                                rnn_nb=rnn_nb,
-                                                                fc_nb=fc_nb,
-                                                                n_mel=n_mel,
-                                                                mixup_warmup_epoch=mixup_warmup_epoch,
-                                                                mixup_alpha=mixup_alpha,
-                                                                )
+                                                        change_yaml(yaml_file,
+                                                                    count_trial=count_trial,
+                                                                    output_file=output_file,
+                                                                    model=model,
+                                                                    loss=loss,
+                                                                    patch_len=patch_len,
+                                                                    lr=lr,
+                                                                    batch_size=batch_size,
+                                                                    cnn_nb_filt=cnn_nb_filt,
+                                                                    rnn_nb=rnn_nb,
+                                                                    fc_nb=fc_nb,
+                                                                    n_mel=n_mel,
+                                                                    mixup_warmup_epoch=mixup_warmup_epoch,
+                                                                    mixup_alpha=mixup_alpha,
+                                                                    sa_time_mask=sa_time_mask
+                                                                    )
 
-                                                    # call the job
-                                                    str_exec = 'python classify.py -p ' + yaml_file
-                                                    print(str_exec)
-                                                    # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
+                                                        # call the job
+                                                        str_exec = 'python classify.py -p ' + yaml_file
+                                                        print(str_exec)
+                                                        # CUDA_VISIBLE_DEVICES=0 KERAS_BACKEND=tensorflow python jobPlan.py &> logs/pro4_model_set_approach_hyper.out
 
-                                                    try:
-                                                        retcode = subprocess.call(str_exec, shell=True)
-                                                        if retcode < 0:
-                                                            print("Child was terminated by signal", -retcode, file=sys.stderr)
-                                                        else:
-                                                            print("Child returned", retcode, file=sys.stderr)
-                                                    except OSError as e:
-                                                        print("Execution failed:", e, file=sys.stderr)
+                                                        try:
+                                                            retcode = subprocess.call(str_exec, shell=True)
+                                                            if retcode < 0:
+                                                                print("Child was terminated by signal", -retcode, file=sys.stderr)
+                                                            else:
+                                                                print("Child returned", retcode, file=sys.stderr)
+                                                        except OSError as e:
+                                                            print("Execution failed:", e, file=sys.stderr)
 
     end = time.time()
 
