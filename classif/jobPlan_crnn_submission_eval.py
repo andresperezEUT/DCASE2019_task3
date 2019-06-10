@@ -103,21 +103,21 @@ dropout_rate = 0.5  # this was found to be VERY important. Always include
 
 
 # ===================================================vip archi  ALPHA, with lrs = [0.0001]
-lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
-cnn_nb_filts = [128]
-rnn_nbs = [[64]]
-fc_nbs = [[32]]
-# output_file = 'crnn_seld_explore_net_tagger_ALPHA'
-n_mels = [128]
+# lrs = [0.0001]    # this one yields slighly lower results, but nicer curves. allows for more capacity in FC or CNN
+# cnn_nb_filts = [128]
+# rnn_nbs = [[64]]
+# fc_nbs = [[32]]
+# # output_file = 'crnn_seld_explore_net_tagger_ALPHA'
+# n_mels = [128]
 
 
 # ===================================================vip archi BETA, with lrs = [0.001]
-# cnn_nb_filts = [64]
-# rnn_nbs = [[64]]
-# fc_nbs = [[32]]
-# # output_file = 'crnn_seld_explore_net_tagger_BETA'
-# n_mels = [64]
-# # lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
+cnn_nb_filts = [64]
+rnn_nbs = [[64]]
+fc_nbs = [[32]]
+# output_file = 'crnn_seld_explore_net_tagger_BETA'
+n_mels = [64]
+lrs = [0.001]   # this one yields a bit better results, but closer to OF. DANGER, architecture BETA
 # lrs = [0.0005]   # this one we never tried
 
 
@@ -141,11 +141,15 @@ mixup_log = False
 mixup_clamp = False
 mixup_warmup_epochs = [-1]
 # mixup_alphas = [0.1, 0.2, 0.3, 0.4, 1, 2, 4]
-mixup_alphas = [0.05, 0.1, 0.15, 0.2]
+# mixup_alphas = [0.05, 0.1, 0.15, 0.2]
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_alpha'
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.001_mixup_alpha_05101520'
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA64_lr0.0005_mixup_alpha_05101520'
-output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
+# output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
+
+# ********************************************************submission over the evaluation set
+output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v0'
+mixup_alphas = [0.1]
 
 
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_mixup_warmup'
@@ -163,9 +167,6 @@ output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_0510
 # output_file = 'crnn_seld_Q_explore_net_tagger_BETA_lq_loss'
 
 
-# ********************************************************submission over the evaluation set
-output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET'
-
 
 
 
@@ -174,7 +175,7 @@ losses = ['CCE']  # CCE_diy_max, lq_loss, CCE_diy_outlier, CCE, CCE_diy_max_orig
 # q_losses = [0.3, 0.5, 0.7]
 
 # vip define the path of the yaml with (most) of the parameters that define the experiment
-yaml_file = 'params_edu_v1.yaml'
+yaml_file = 'params_edu_v1_final_submission.yaml'
 
 
 def change_yaml(fname, count_trial, output_file, model, loss, patch_len, lr, batch_size, cnn_nb_filt, rnn_nb, fc_nb, n_mel, mixup_warmup_epoch, mixup_alpha):
