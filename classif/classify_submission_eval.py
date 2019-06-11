@@ -537,9 +537,15 @@ for kfo in range(0, 1):
     print('=========================================================================================================\n')
     # x-val setup given by DCASE organizers
     if kfo == 0:
-        splits_tr = [3, 4, 2]
-        splits_val = [1]
-        splits_te = [0]
+        # output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v0' # train with splits  [3, 4, 2]
+        # this yields weird curves. Validation is much better than training
+        # splits_tr = [3, 4, 2]
+        # splits_val = [1]
+
+        # output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v1'  # train with splits  [1, 2, 3]
+        splits_tr = [1, 2, 3]
+        splits_val = [4]
+
     # elif kfo == 2:
     #     splits_tr = [4, 1]
     #     splits_val = [3]

@@ -148,7 +148,8 @@ mixup_warmup_epochs = [-1]
 # output_file = 'crnn_seld_Q_explore_net_tagger_ALPHA128_lr0.0001_mixup_alpha_05101520'
 
 # ********************************************************submission over the evaluation set
-output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v0'
+# output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v0' # train with splits  [3, 4, 2]
+output_file = 'crnn_seld_Q_explore_net_tagger_SUBMIT_EVAL_SET_v1'   # train with splits  [1, 2, 3]
 mixup_alphas = [0.1]
 
 
