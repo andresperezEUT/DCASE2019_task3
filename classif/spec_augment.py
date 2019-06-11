@@ -33,6 +33,12 @@ LD : LibriSpeech double
 SM : Switchboard mild
 SS : Switchboard strong
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
 
 import librosa
 import librosa.display
@@ -62,9 +68,7 @@ import matplotlib.pyplot as plt
 # limitations under the License.
 # ==============================================================================
 """Polyharmonic spline interpolation."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
 
 import numpy as np
 
@@ -363,9 +367,7 @@ def interpolate_spline(train_points,
 # limitations under the License.
 # ==============================================================================
 """Image warping using per-pixel flow vectors."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
 
 import numpy as np
 
@@ -558,9 +560,9 @@ def dense_image_warp(image, flow, name='dense_image_warp'):
 # /Users/edufonseca/miniconda3/envs/kaggle18/lib/python3.6/site-packages/tensorflow/contrib/image/python/ops/sparse_image_warp.py
 # /Users/edufonseca/miniconda3/envs/kaggle18/lib/python3.6/site-packages/tensorflow/contrib/image/python/ops/sparse_image_warp.py
 """Image warping using sparse flow defined at control points."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
 
 import numpy as np
 
