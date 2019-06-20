@@ -1,0 +1,67 @@
+ctrl:
+  dataset_path: ../data/mono_data/
+  feat_ext: true
+  learn: true
+  output_file: debug_eval_trial
+  pipeline: T_F
+extract:
+  audio_len_s: 2
+  diff: false
+  eps: 2.220446049250313e-16
+  fmax: 18000
+  fmin: 20
+  fs: 48000
+  hop_length_samples: 960 # equals 20 ms at 48kHz
+  htk: false
+  load_mode: varup
+  log: true
+  mel_basis_unit: null
+  method: mel
+  mono: true
+  n_fft: 2048
+  n_mels: 64
+  normalize_audio: true
+  normalize_mel_bands: false
+  patch_hop: 13  # 13 frames means 250 ms that we slide the patches
+  patch_len: 50  # 50 frames with hopsize of 20ms means patches of 1 second
+  snip_hop: 24000
+  snip_len: 48000
+  spectrogram_type: power
+  win_length_samples: 1920
+  window: hamming_asymmetric
+  mode_last_patch: fill     # discard
+learn:
+  alpha_mobilenet: 0.5
+  batch_size: 64
+  dropout: true
+  dropout_prob: false
+  early_stop: val_acc
+  lr: 0.001
+  lr_schedule: true
+  mixup: false
+  mixup_alpha: 2
+  mixup_mode: intra
+  mixup_warmup_epochs: 5
+  mode_class_weight: false
+  model: debug
+  n_classes: 11
+  n_epochs: 100
+  optim: Adam
+  patience: 15
+  stages: 1
+  val_method: random
+  val_split: 0.15
+loss:
+  type: CCE
+recognizer:
+  aggregate: gmean
+suffix:
+  in: _mel
+  out: _label
+crnn:
+  cnn_nb_filt: 128
+  cnn_pool_size: [5, 2, 2]
+  rnn_nb: [32]
+  fc_nb: [32]
+  dropout_rate: 0.5
+  cnn_nb_kernelsize: (3, 3)
