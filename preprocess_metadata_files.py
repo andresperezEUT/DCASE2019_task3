@@ -65,14 +65,7 @@ for audio_file_name in audio_files:
                 # You can try also with 'inphase', I would say there is not much difference in the non-overlapping case...
                 sound_event_mono = beamforming(b_format[start_frame:end_frame], azimuth, elevation, beamforming_method)
 
-                # Here you go!
-                # plt.figure()
-                # plt.suptitle(sound_class_string)
-                # plt.plot(sound_event_mono)
-                # plt.grid()
-
-                # sf.write('/Users/andres.perez/Desktop/sources/'+sound_class_string+str(start_frame)+'.wav',sound_event_mono,sr)
-                # filename = sound_class_string + '_' + str(start_frame) + '_' + str(end_frame) + '.wav'
+                # Write audio to file
                 filename = sound_class_string + '_' + str(start_frame) + '_' + metadata_file_name.split('.')[0] + '.wav'
                 sf.write('data/mono_data/wav/dev/' + filename, sound_event_mono, sr)
 
