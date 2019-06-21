@@ -20,7 +20,7 @@ The estimated signals are finally labelled by a multi-class CRNN. (TODO 4EDU rev
 Figure 1 shows a general overview of the method.
 
 
-![alt text](https://github.com/andresperezlopez/DCASE2019_task3/master/figs/DCASE19Task3_backend_archi_v3.png "Logo Title Text 1")
+![alt text](https://github.com/andresperezlopez/DCASE2019_task3/tree/master/figs/DCASE19Task3_backend_archi_v3.png "Logo Title Text 1")
 
 
 
