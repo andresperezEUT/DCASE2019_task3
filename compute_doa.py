@@ -15,7 +15,7 @@ import time, datetime
 start_time = time.time()
 
 # SELECT THE PARAMETER PRESET HERE!
-preset = 'B_eval'
+preset = 'Q_6_eval'
 params = get_params(preset)
 
 # Get path to data to be processed

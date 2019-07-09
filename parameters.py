@@ -18,7 +18,7 @@ def get_params(preset_string=None):
 
         # DATASET LOADING PARAMETERS
         # mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
-        mode='eval',         # 'dev' - development or 'eval' - evaluation dataset
+        mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
         dataset='foa',      # 'foa' - ambisonic or 'mic' - microphone signals
 
         # MODEL PARAMETERS
@@ -161,7 +161,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 11
 
     elif preset_string == 'Q_eval':
@@ -183,9 +182,49 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 11
 
+    elif preset_string == 'Q_6':
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.4
+        params['r'] = 10
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.4
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['num_init_kmeans'] = 4
+        params['energy_density_local_th_size'] = 11
+        params['overwrite'] = True
+        #------------------------------------------
+        params['num_min_valid_bins'] = 1  # K_min
+        params['min_std_overlapping'] = 15 # sigma_max
+        params['median_filter_vicinity_radius'] = [10, 10] # d
+        params['min_num_frames_per_event'] = 10 ###
+        params['max_angular_distance_within_event'] = 15
+        params['max_frame_distance_within_event'] = 18
+    # DOA metrics: doa error: 9.65936470874, frame recall:0.788145833333
+
+    elif preset_string == 'Q_6_eval':
+        params['mode'] = 'eval'
+        params['preset_string'] = preset_string
+        params['directivity_th'] = 0.4
+        params['r'] = 10
+        params['doa_std_vicinity_radius'] = 2
+        params['doa_std_th'] = 0.85
+        params['doa_median_average_nan_th'] = 0.4
+        params['fmin'] = 0
+        params['fmax'] = 8000
+        params['num_init_kmeans'] = 4
+        params['energy_density_local_th_size'] = 11
+        params['overwrite'] = True
+        #------------------------------------------
+        params['num_min_valid_bins'] = 1  # K_min
+        params['min_std_overlapping'] = 15 # sigma_max
+        params['median_filter_vicinity_radius'] = [10, 10] # d
+        params['min_num_frames_per_event'] = 10 ###
+        params['max_angular_distance_within_event'] = 15
+        params['max_frame_distance_within_event'] = 18
 
 
     elif preset_string == '8_r1':
@@ -330,7 +369,7 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = 1
-        # params['std_doa_vicinity_radius'] = 1
+
     elif preset_string == '9c_r10_mv15_sv1':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
@@ -349,7 +388,7 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [1,5]
-        # params['std_doa_vicinity_radius'] = 1
+
     elif preset_string == '9c_r10_mv5_sv5':
         params['preset_string'] = preset_string
         params['directivity_th'] = 0.5
@@ -368,7 +407,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = 5
-        # params['std_doa_vicinity_radius'] = 3
 
     elif preset_string == 'B_short':
         params['preset_string'] = preset_string
@@ -407,7 +445,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [10, 10]
-        params['std_doa_vicinity_radius'] = 5
 
     elif preset_string == 'B_short3':
         params['preset_string'] = preset_string
@@ -427,7 +464,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [10, 10]
-        params['std_doa_vicinity_radius'] = 5
 
     elif preset_string == 'B_short4':
         params['preset_string'] = preset_string
@@ -447,7 +483,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
 
     elif preset_string == 'B_short4q':
         params['preset_string'] = preset_string
@@ -467,7 +502,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
 
     elif preset_string == 'B_short4q_2':
         params['preset_string'] = preset_string
@@ -487,7 +521,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
 
 
     elif preset_string == 'B_short4q_2zzz':
@@ -508,7 +541,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 1
 
 
@@ -530,7 +562,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 11
 
     elif preset_string == 'B_short4_low':
@@ -551,7 +582,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 21
 
     elif preset_string == 'B_short4_high':
@@ -572,7 +602,6 @@ def get_params(preset_string=None):
         params['overwrite'] = True
         params['num_init_kmeans'] = 4
         params['median_filter_vicinity_radius'] = [20, 20]
-        params['std_doa_vicinity_radius'] = 5
         params['energy_density_local_th_size'] = 91
 
     elif preset_string == 'C':
