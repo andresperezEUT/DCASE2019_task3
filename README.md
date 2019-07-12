@@ -53,7 +53,9 @@ beamformer; hence beamforming is the only processing carried out. Use `preproces
  - using the **proposed complete frontend**. Use `process_doa_results.py` for this. Files are stored in `data/mono_data/wav/dev_param_Q/`
 
 These scripts need that the development set (400 wav files of TAU Spatial Sound Events 2019 - Ambisonic) be placed in `data/foa_dev/`, and the accompanying metadata be placed in `/data/metadata_dev`.
-The outcome of scripts `preprocess_metadata_files.py` and `process_doa_results.py` is the deterministic list of audio clips stored, and the corresponding ground truth csv file to access the files subsequently.
+The outcome of scripts `preprocess_metadata_files.py` and `process_doa_results.py` is:
+ - the deterministic list of audio clips stored, and
+ - the corresponding ground truth csv files to access the clips subsequently (namely `gt_dev.csv` and `gt_dev_parametric_Q.csv`, which must be placed in `data/mono_data` for further processing.
 
 During _development_, the classification backend is trained using the provided four fold cross-validation setup in the **development set**.
 The CRNN is trained always on the outcome of the ideal frontend.
